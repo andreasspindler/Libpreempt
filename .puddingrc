@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# -*-coding:raw-text-unix;-*-
+#
+# .proverc -- Project resource file
+#
+# The purpose of this file is to set global variables based on the
+# current value of
+#
+#    $TestFlavor
+#
+# The value is set to -c NAME argument passed to "prove.sh"
+#
+TestTarget='Libpreempt'
+
+case ${TestFlavor}
+in
+  std)
+    Tests=($(find_tests $TestDir 'std_*.cpp'))
+    ;;
+  pthread)
+    Tests=($(find_tests $TestDir 'pthread_*.cpp'))
+    ;;
+  task)
+    Tests=($(find_tests $TestDir 'task_*.cpp'))
+    ;;
+  process)
+    Tests=($(find_tests $TestDir 'process_*.cpp'))
+    ;;
+  sched)
+    Tests=($(find_tests $TestDir 'sched_*.cpp'))
+    ;;
+  parinama)
+    #
+    # this is a Sanskrit word and means development, change
+    #
+    # use this when developing/debugging a single test
+    #
+    Tests=($(find_tests $TestDir 'new_thing.cpp'))
+    ;;
+esac
+

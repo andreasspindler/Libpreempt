@@ -1,0 +1,28 @@
+# -*-mode: hosts-generic; coding:raw-text-unix;-*-
+
+# emacs, vim, ctags
+*~
+\#*
+.\#*
+.\#*\#
+TAGS
+BROWSE
+Session.vim
+.emacs.*
+
+# project-specific
+.attic/
+Makefile
+out/
+*.lnk
+*.stderr
+*.stdout
+
+# gdb -x scripts
+gdb*
+
+# gcc profiler files
+*.gc*
+
+
+

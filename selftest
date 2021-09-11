@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+{
+  if [[ -x ./pudding.sh ]]; then
+    pudding='./pudding.sh -s'
+    if $pudding &&
+        $pudding -fstd build 1 &&
+        $pudding touch; then
+      echo "$0; OK"
+    elif { uname -v | grep PREEMPT >/dev/null; }; then
+      echo "$0: FAILED"
+    else
+      echo "$0: OK (no preempt_rt patches)"
+    fi
+  fi
+}
