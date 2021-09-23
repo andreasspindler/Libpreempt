@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # -*-coding:raw-text-unix;-*-
 #
-# pudding.sh -- unit test tool that compiles and run a bunch of C++
-#               files and collects statistics
+# pudding.sh -- unit test tool that compiles a bunch of C++ files,
+#               runs the executables and collects statistics
 #
 # Because the proof is in the pudding.
 #
@@ -11,8 +11,6 @@
   # options and environment
   #
   # we use camel-case to denote global variables
-  #
-  # all variables can be overloaded by .puddingrc
   #
   TestTarget=$(basename "$PWD")
   TestFlavor='all'
@@ -334,6 +332,11 @@ EOF
             exit
           fi
           ;;
+
+        ########################################
+        # Compile all files on all optimization levels and try a few
+        # runs.
+        #
         'stretch')
           # same code as 'afk' only $jiva different
           jiva="$0 -DOPER -q -q"
@@ -349,10 +352,6 @@ EOF
           fi
           ;;
 
-        ########################################
-        # Compile all files on all optimization levels and try a few
-        # runs.
-        #
 
         ########################################
         # Unmatched commands are forwarded as Makefile targets.
