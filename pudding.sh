@@ -40,7 +40,7 @@ Options:
   -R            shortcut for '-o release'
   -j<JOBS>      number of make jobs
   -q            silent mode (use twice to suppress warnings too)
-  -s            shy mode
+  -s            shy mode (stop if a run fails instead of counting)
   -S            run test targets under 'sudo'
   -h            help
 
@@ -49,7 +49,7 @@ Valid values for <CMD>:
   list      Lists all tests
 
   <NUMBER>  Define the # of processes to spawn for each test. In shy mode (-s)
-            the script will if a run failed.
+            the script will stop if a run failed.
 
   afk       dto. but do very many runs (yet not infinitely many)
 
@@ -337,9 +337,9 @@ EOF
         # Compile all files on all optimization levels and try a few
         # runs.
         #
-        'stretch')
+        'test')
           # same code as 'afk' only $jiva different
-          jiva="$0 -DOPER -q -q"
+          jiva="$0 -DOER -q -q"
           ((optquiet>=1)) && jiva+=' -q'
           ((optquiet==2)) && jiva+=' -q'
           ((optshy)) && jiva+=' -s'
@@ -351,7 +351,6 @@ EOF
             done
           fi
           ;;
-
 
         ########################################
         # Unmatched commands are forwarded as Makefile targets.

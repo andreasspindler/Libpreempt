@@ -12,7 +12,6 @@ Session.vim
 
 # project-specific
 .attic/
-Makefile
 out/
 *.lnk
 *.stderr

@@ -13,6 +13,12 @@ The project consists of two components:
 - the C++ framework *Libpreempt*
 - the unit test tool *Pudding*
 
+Quick start:
+
+``` sh
+ $ make
+```
+
 ## Libpreempt
 
 *Libpreempt* is a C++ library build around the class
