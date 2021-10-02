@@ -208,8 +208,7 @@ EOF
     cat >>$TestMarchDir/$TestMakefile <<EOF
 
 clean:
-$(printf "\t")find . -name '*.stackdump' -delete
-$(printf "\t")find . -not -name '*.stderr' -not -name '*.stdout' -delete
+$(printf "\t")find . -delete
 EOF
   }
 
@@ -265,7 +264,6 @@ EOF
               do
                 Good=0 Bad=0 Missing=0
                 t=${chained[$tbase]}
-                #echo "$tbase: $t"
                 printf "%-32s % 10u run(s) " $tbase $Cmd
                 for i in $(seq 1 $Cmd); do
                   if ($t) 2>>$tbase.stderr | tee -a $tbase.stdout; then
@@ -291,6 +289,9 @@ EOF
                 t=$(basename $t)
                 [[ -x $t ]] && ((exists=1)) || x=' !! MISSING'
                 ((optquiet<=1)) && printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetCount "$t$x" $Cmd
+                for ext in stderr stdout stackdump; do
+                  rm -f $t.$ext
+                done
                 for i in $(seq 1 $Cmd); do
                   if ((exists)); then
                     #BgPids+=($!)
@@ -300,6 +301,9 @@ EOF
                   else
                     ((Missing++))
                   fi
+                done
+                for ext in stderr stdout stackdump; do
+                  [[ -s $t.$ext ]] || rm -f $t.$ext # remove if empty
                 done
                 Bad=$((Cmd - Good - Missing))
                 ((optquiet<=1)) && printf "% 10u bad % 10u good\n" $Bad $Good

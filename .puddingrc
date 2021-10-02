@@ -29,13 +29,13 @@ in
   sched)
     Tests=($(find_tests $TestDir 'sched_*.cpp'))
     ;;
-  parinama)
+  develop|parinama)
     #
     # use this when developing/debugging a single test
     #
-    # this is a Sanskrit word and means development, change
+    # parinama is a Sanskrit word and means development, change
     #
-    Tests=($(find_tests $TestDir 'new_thing.cpp'))
+    Tests=($(find_tests $TestDir 'pthread_*.cpp'))
     ;;
 esac
 

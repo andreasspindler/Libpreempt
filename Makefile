@@ -1,7 +1,8 @@
 # Compile: make quick
 # Compile: make test
+# Compile: make develop
 
-quick:;  ./pudding.sh -D -o O0 build 10
+quick:;  ./pudding.sh -D build 10
 
 test:; ./pudding.sh test
 
@@ -11,4 +12,7 @@ sched:; ./pudding.sh -D -tsched -f build 10
 
 std:; ./pudding.sh -D -tstd build 10
 
-x:; ./pudding.sh -D -tx build 10
+# clean required because dependency of base/*.h not defined by pudding.sh
+develop:
+	./pudding.sh -f$@ clean
+	./pudding.sh -f$@ -DR build 10
