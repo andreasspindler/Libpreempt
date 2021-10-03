@@ -17,18 +17,6 @@ in
   std)
     Tests=($(find_tests $TestDir 'std_*.cpp'))
     ;;
-  pthread)
-    Tests=($(find_tests $TestDir 'pthread_*.cpp'))
-    ;;
-  task)
-    Tests=($(find_tests $TestDir 'task_*.cpp'))
-    ;;
-  process)
-    Tests=($(find_tests $TestDir 'process_*.cpp'))
-    ;;
-  sched)
-    Tests=($(find_tests $TestDir 'sched_*.cpp'))
-    ;;
   develop|parinama)
     #
     # use this when developing/debugging a single test

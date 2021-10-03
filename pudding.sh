@@ -397,7 +397,7 @@ EOF
         ((0)) && cerr "command '$Cmd' succeeded"
         :
       else
-        ((0)) && warn "command '$Cmd' failed"
+        die "command '$Cmd' failed"
       fi
     done
 

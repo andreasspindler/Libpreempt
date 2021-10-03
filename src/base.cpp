@@ -41,16 +41,6 @@ namespace base {
 #endif
   }
 
-  pid_t
-  get_current_process_id() {
-    return ::getpid();
-  }
-
-  pid_t
-  get_parent_process_id() {
-    return ::getppid();
-  }
-
   bool
   running_under_VM() {
 #if RUNNING_UNDER_LINUX
@@ -89,42 +79,4 @@ namespace base {
     return not have_realtime_throttling();
 #endif /* RUNNING_UNDER_LINUX */
   }
-
-  bool
-  disable_core_file() {
-    struct ::rlimit rl;
-    rl.rlim_cur = 0;
-    rl.rlim_max = 0;
-    return ::setrlimit(RLIMIT_CORE, &rl) == 0;
-  }
-
-  bool
-  unlimit_lock_pages() {
-#ifdef RUNNING_UNDER_LINUX
-    struct ::rlimit rl;
-    rl.rlim_cur = RLIM_INFINITY;
-    rl.rlim_max = RLIM_INFINITY;
-    return ::setrlimit(RLIMIT_MEMLOCK, &rl) == 0;
-#else
-    return true;
-#endif // RUNNING_UNDER_LINUX
-  }
-
-  bool
-  lock_all_pages() {
-#ifdef RUNNING_UNDER_LINUX
-    return ::mlockall(MCL_CURRENT | MCL_FUTURE) == 0;
-#else
-    return true;
-#endif // RUNNING_UNDER_LINUX
-  }
-
-  bool
-  unlock_all_pages() {
-#ifdef RUNNING_UNDER_LINUX
-    return ::munlockall() == 0;
-#else
-    return true;
-#endif // RUNNING_UNDER_LINUX
-  }
-} /* realtime::details */
+} // base

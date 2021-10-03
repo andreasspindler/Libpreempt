@@ -1,6 +1,6 @@
 /* -*-coding:raw-text-unix-*-
  *
- * base/pthread.h -- POSIX threads
+ * preempt/pthread.h -- POSIX threads
  */
 #pragma once
 
@@ -11,18 +11,10 @@
 #include <cstring>              // std::strerror
 #include <iostream>
 
-namespace base {
+namespace preempt {
 namespace pthread {
 typedef void*(*function)(void*);
 
-/**
- * @example:
- *    if (auto context = base::pthread(fun)) {
- *      // ok
- *    } else {
- *      // failed
- *    }
- */
 struct context {
   pthread_t id {};
   std::shared_ptr<::pthread_attr_t> attrp {};
@@ -66,4 +58,5 @@ join(context thread) {
   return result;
 }
 } // pthread
-} // base
+} // preempt
+

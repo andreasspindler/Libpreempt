@@ -1,4 +1,6 @@
 /*
+ * By definition a task is an object containing one ore more worker threads.
+ *
  * MonoTask: class with std::thread attribute
  *
  * PolyTask: class with std::vector<std::thread> attribute
@@ -9,9 +11,6 @@
 #include <cassert>
 
 using namespace std;
-
-template <unsigned>
-class Worker;
 
 /**
  * Distribute work to a single thread.
@@ -43,37 +42,39 @@ public:
   void join();
 };
 
-class Test {
-public:
-  void eins(int n) const { assert(n == 1); }
-  void zwei(int n) const { assert(n == 2); }
-  void drei(int const& n) const { assert(n == 3); }
-};
-
+/***********************************************************************
+ * main function
+ */
 int main(int argc, char *argv[])
 {
-  Test t;
+  class Test {
+  public:
+    void eins(int n) const { assert(n == 1); }
+    void zwei(int n) const { assert(n == 2); }
+    void drei(int const& n) const { assert(n == 3); }
+  } t;
+
   int x = 3;
 
-  MonoTask m;
-  PolyTask p;
+  MonoTask mono;
+  PolyTask poly;
 
   for (int i = 0; i < 10; ++i) {
-    m.spawn(&Test::eins, &t, 1);
-    m.spawn(&Test::zwei, &t, 2);
-    m.spawn(&Test::drei, &t, std::ref(x));
+    mono.spawn(&Test::eins, &t, 1);
+    mono.spawn(&Test::zwei, &t, 2);
+    mono.spawn(&Test::drei, &t, std::ref(x));
     for (int i = 0; i < 3; ++i) {
-      p.spawn(&Test::eins, &t, 1);
-      p.spawn(&Test::zwei, &t, 2);
-      p.spawn(&Test::drei, &t, std::ref(x));
+      poly.spawn(&Test::eins, &t, 1);
+      poly.spawn(&Test::zwei, &t, 2);
+      poly.spawn(&Test::drei, &t, std::ref(x));
     }
   }
-  m.join();
-  p.join();
-  return 0;
+  mono.join();
+  poly.join();
+  return EXIT_SUCCESS;
 }
 
-/***********************************************
+/***********************************************************************
  * implementation
  */
 template<class Function, class... Args>

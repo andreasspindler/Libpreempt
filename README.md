@@ -31,7 +31,8 @@ constructor and run in close collaboration with other threads within a process
 (aka `join()`).
 
 The next element of the framework are *tasks*. By definition, a task is a class
-that contains threads as members.
+that contains threads as members (threads are to time what containers are to
+data).
 
 Based on tasks *scheduling strategies* are defined (also in form of classes)
 that implement a way of distributing tasks over time.
@@ -50,7 +51,7 @@ The script can execute these files repeatedly while counting successful runs.
 Essentially this means all `assert()`-ions hold true, neither `std::abort()` nor
 `std::terminate()` was called and the process returns 0 (`EXIT_SUCCESS`).
 
-### In media res
+### Example
 
 Let's assume we have 5 C++ files, each with a `main` function, 3 optimization
 levels (*debug Os O3*) and 2 language standards (*c++14 c++17*):
@@ -95,11 +96,11 @@ to prefix each run of a compiled executable with `sudo`. Alternatively:
 The name of the script was inspired by the expression "the proof is in the
 pudding." Generally, it is used to say the best test of a pudding is to eat it.
 The real worth or effectiveness of something can only be determined by putting
-it to the test by trying or using it, over and over again, standards, versions,
-promises and hopes aside.
+it to the test by trying or using it, over and over again, standards, versions
+and promises aside.
 
 Since it operates inside a computer `pudding.sh` expects that no process will
-fail *ever*. Either they all succeed or something smells.
+fail *ever*. Either they all succeed or there are bugs.
 
 # CATEGORIES
 
