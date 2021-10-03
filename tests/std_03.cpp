@@ -1,7 +1,5 @@
 /*
  * std::thread background task executing nonstatic member function
- *
- * Any nonstatic member function can be made a thread function
  */
 #include <thread>
 #include <string>

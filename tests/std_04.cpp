@@ -1,9 +1,8 @@
 /*
  * std::thread background task executing callable (std::is_invocable)
  *
- * std::thread works with any callable type, object or function. The overload of
- * 'operator()' of its class makes an object callable.
- *
+ * std::thread works with any callable type. The overload of 'operator()' of its
+ * class makes an object callable.
  */
 #include <thread>
 #include <string>
@@ -39,10 +38,10 @@ int main(int argc, char *argv[])
     thread {task, "example"},              // Task::operator(string)
     thread {task, 42},                     // Task::operator(int)
 #if 1
-  /* “C++’s most vexing parse.” If you pass a temporary rather than a
-     named variable, then the syntax can be the same as that of a
-     function declaration, in which case the compiler interprets it as
-     such, rather than an object definition. */
+  /* “C++’s most vexing parse.” If you pass a temporary rather than a named
+     variable, then the syntax can be the same as that of a function
+     declaration, in which case the compiler interprets it as such, rather than
+     an object definition. */
     thread {Task(), 42}
 #endif
   };

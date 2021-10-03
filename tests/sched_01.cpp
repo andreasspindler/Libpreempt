@@ -5,8 +5,9 @@
  * expects a certain value before decrementing the integer so the order which
  * realtime threads are scheduled is strictly checked, or the process fails.
  */
-#include <base/details/system.h>
+#include <base/pthread.h>
 #include <base/debug.h>
+
 #include <atomic>
 
 std::atomic<int> value;
@@ -15,12 +16,8 @@ void* decrement(void *expected_value)
 {
   assert(value == *(int*)(expected_value));
   value--;
-  //::sched_yield();
   return nullptr;
 }
-
-pthread_t
-create_thread(int policy, int priority, void* (*)(void*), void* argp);
 
 int main(int argc, char *argv[])
 {
@@ -55,39 +52,22 @@ int main(int argc, char *argv[])
   */
   value = 9;
   int expected[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-  pthread_t a[] {
-    create_thread(SCHED_FIFO, 10, decrement, &expected[9]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[8]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[7]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[6]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[5]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[4]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[3]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[2]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[1]),
-    create_thread(SCHED_FIFO, 10, decrement, &expected[0])
+  base::pthread::context a[] {
+    base::pthread::create(decrement, &expected[9], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[8], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[7], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[6], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[5], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[4], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[3], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[2], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[1], SCHED_FIFO, 10),
+    base::pthread::create(decrement, &expected[0], SCHED_FIFO, 10)
   };
-  for (auto h : a) {
-    pthread_join(h, 0);
+  for (auto c : a) {
+    base::pthread::join(c);
   }
 
   base::unlock_all_pages();
   return EXIT_SUCCESS;
-}
-
-pthread_t
-create_thread(int policy, int priority, void* (*fun)(void*), void* argp)
-{
-  pthread_attr_t* const attr = new pthread_attr_t;
-  pthread_attr_init(attr);
-  pthread_attr_setdetachstate(attr, PTHREAD_CREATE_JOINABLE);
-  pthread_attr_setinheritsched(attr, PTHREAD_EXPLICIT_SCHED);
-  pthread_attr_setschedpolicy(attr, policy);
-  sched_param* const sch = new sched_param;
-  sch->sched_priority = priority;
-  pthread_attr_setschedparam(attr, sch);
-  pthread_t result;
-  pthread_create(&result, attr, fun, argp)
-    && BADSYSCALL("pthread_create");
-  return result;
 }
