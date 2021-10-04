@@ -225,6 +225,23 @@ For example:
 In *.puddingrc* you modify the global variables *CCStandards* and *CCBaseFlags*
 according to the flavor. See `pudding.sh -h` for details.
 
+## Running tests inattentively
+
+A special use case is running all tests very often, like over-night or even when
+we going to vacation:
+
+``` sh
+ $ pudding afk
+```
+
+This command runs tests on a sequence of Fibonacci numbers up to 46368. A
+quicker version is `test` which runs the sequence only up to 21 (enough to get a
+cup of tea).
+
+``` sh
+ $ pudding test
+```
+
 # BACKGROUND
 
 ## RTOS
@@ -260,37 +277,22 @@ to prefix each run of a compiled executable with `sudo`. Alternatively:
 
 ## Etymology
 
-The name of the script was inspired by the expression "the proof is in the
-pudding." Generally, it is used to say the best test of a pudding is to eat it.
-The real worth or effectiveness of something can only be determined by putting
-it to the test by trying or using it, over and over again, standards, versions
-and promises aside.
+The name of the script `pudding.sh` was inspired by the expression "the proof is
+in the pudding." Generally, it is used to say the best test of a pudding is to
+eat it. The real worth or effectiveness of something can only be determined by
+putting it to the test by trying or using it, over and over again, standards,
+versions and promises aside.
 
 Since it operates inside a computer `pudding.sh` expects that no process will
 fail *ever*. Either they all succeed or there are bugs.
-
-## Running tests inattentively
-
-A special use case is running all tests very often, like over-night or even when
-we going to vacation:
-
-``` sh
- $ pudding afk
-```
-
-This command runs tests on a sequence of Fibonacci numbers up to 46368. A
-quicker version is `test` which runs the sequence only up to 21 (enough to get a
-cup of tea).
-
-``` sh
- $ pudding test
-```
 
 # AUTHOR/COPYRIGHT
 
 Andreas Spindler <info@andreasspindler.de>
 
 For copyright and license information see file UNLICENSE.
+
+https://github.com/andreasspindler/Libpreempt
 
 <!--
 Local Variables:
