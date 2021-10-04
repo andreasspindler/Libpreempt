@@ -7,6 +7,7 @@
 #include <base/details/system.h>
 
 namespace base {
+namespace details {
   /**
    * @brief Improves the performance of busy loops
    *
@@ -39,11 +40,12 @@ namespace base {
    */
   inline
   void
-  realtime_yield() {
+  yield() {
 #if RUNNING_UNDER_LINUX
     ::sched_yield();
 #else
     ::usleep(1);                // 1us should trigger context switch
 #endif // RUNNING_UNDER_LINUX
   }
+}
 }

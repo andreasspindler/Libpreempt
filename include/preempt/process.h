@@ -71,5 +71,8 @@ namespace preempt {
      */
     bool
     disable_core_file();
+
+    void
+    yield();
   } // this_process
 } // preempt

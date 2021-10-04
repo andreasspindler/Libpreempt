@@ -39,11 +39,13 @@ Scheduler
 The library is build around the class
 `preempt::realtime_thread<SCHEDULING_POLICY>` which is basically equal to
 `std::thread` but for realtime threads. That is, threads with a priority above 0
-and a realtime policy such as `SCHED_FIFO` or `SCHED_RR`.
+and a realtime policy such as `SCHED_FIFO` or `SCHED_RR`. The standard [yet]
+implements no realtime threads.
 
-Both classes, `std::thread` and `preempt::realtime_thread` spawn a system thread in the
-constructor and run in close collaboration with other threads within a process
-(`join()`).
+Both classes, `std::thread` and `preempt::realtime_thread` spawn a system thread
+in the constructor and run in cooperation with other threads. within a process
+None of both provide any way to non-cooperatively kill a thread because this is
+generally a bad idea.
 
 ## Unit tests
 
@@ -80,11 +82,6 @@ As one can see categories are based on each another:
                        |===> scheduling ==> process
    pthread ==> task ===|
 ```
-
-We use *pthread* because the C++ standard [yet] implements no realtime threads.
-If it will one day, the `realtime_thread` class in *Libpreempt* will probably
-become superfluous. The changes required in the application should be
-manageable, especially since we can test them beforehand using `pudding.sh`.
 
 ## Pudding
 
@@ -308,7 +305,7 @@ practical problem** (application) and not for all conceivable questions.
 ## How does Preemptive Multitasking work for realtime systems?
 
 Preemptive multitasking creates the illusion that multiple processes and threads
-run concurrently on a single processor, while these are actually only assigned a
+run concurrently on a single processor, while they are actually only assigned a
 small time slice. If the time slice is exceeded, the process or thread is
 "preempted", i.e. interrupted and has to wait for its next time slice.
 
@@ -320,8 +317,8 @@ This means that a realtime thread can take over and paralyze the entire system
 if it does not return quickly enough or in the case of longer jobs voluntarily
 calls `sched_yield()`.
 
-For this reason, RT throttling is activated under Linux: by default, 5% of the
-CPU time is also assigned to non-RT threads every second.
+For this reason, RT throttling is activated under Linux: by default 5% of the
+CPU time is also assigned to non-RT threads per second.
 
 ## How does Cooperative Multitasking work for realtime systems?
 
@@ -341,7 +338,7 @@ is implemented preemptively or cooperatively.
 
 # APPENDIX
 
-## Some details about POSIX realtime scheduling (SCHED_FIFO, SCHED_RR)
+## Details about POSIX realtime scheduling (SCHED_FIFO, SCHED_RR)
 
 FIFO and RR threads belong to the cathegory of the real-time (RT) processes.
 Real-time processes are in charge of critical tasks whose execution cannot be

@@ -1,5 +1,7 @@
 #include <preempt/process.h>
 
+#include <base/details/yield.h>
+
 namespace preempt {
   pid_t
   get_current_process_id() {
@@ -59,6 +61,11 @@ namespace preempt {
       rl.rlim_cur = 0;
       rl.rlim_max = 0;
       return ::setrlimit(RLIMIT_CORE, &rl) == 0;
+    }
+
+    void
+    yield() {
+      base::details::yield();
     }
   }
 }
