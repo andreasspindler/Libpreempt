@@ -45,32 +45,11 @@ Both classes, `std::thread` and `preempt::realtime_thread` spawn a system thread
 constructor and run in close collaboration with other threads within a process
 (`join()`).
 
-## Pudding
+## Unit tests
 
-Pudding is implemented in a single script. It compiles a matrix of executables
-for each single test, runs them and summarizes results.
-
-More specifically, this is how the `pudding.sh` script works. It assumes that
-each *.cpp*-file in *tests/* is a separate test. It then spans these tests over
-several language standards, optimization levels and CPU microarchitectures and
-in this way generates many executable files.
-
-The script can execute these files repeatedly while counting successful runs.
-Essentially this means all `assert()`s hold true, neither `std::abort()` nor
-`std::terminate()` was called and the process returns 0 (`EXIT_SUCCESS`).
-
-As soon as something changes with the hardware, OS, compiler, libraries etc. the
-hard-won tests can be rebuild and trust can be regained again.
-
-Pudding works nicely on top of **Docker images** and **Yocto Linux Bitbake
-recipes**, with Docker or Yocto providing the system basis and Pudding the basis
-for the programming techniques used in the actual application.
-
-## Tests
-
-Most test shipped in this repository have to do with realtime and concurrency.
-Every single test has been carefully written in a way that (1) it runs one
-specific scenario and (2) is human readable.
+Practically all tests shipped in this repository have to do with realtime and
+concurrency. Every single test has been carefully written in a way that (1) it
+runs one specific scenario and (2) is human readable.
 
 On this basis one can pick a test and modify it or derive new tests from
 existing ones easily. Another motivation was to have an easy environment to
@@ -106,6 +85,28 @@ We use *pthread* because the C++ standard [yet] implements no realtime threads.
 If it will one day, the `realtime_thread` class in *Libpreempt* will probably
 become superfluous. The changes required in the application should be
 manageable, especially since we can test them beforehand using `pudding.sh`.
+
+## Pudding
+
+Pudding is the driver for the unit tests and implemented in a single script. It
+compiles a matrix of executables for each single test, runs them and summarizes
+results.
+
+More specifically, this is how the `pudding.sh` script works. It assumes that
+each *.cpp*-file in *tests/* is a separate test. It then spans these tests over
+several language standards, optimization levels and CPU microarchitectures and
+in this way generates many executable files.
+
+The script can execute these files repeatedly while counting successful runs.
+Essentially this means all `assert()`s hold true, neither `std::abort()` nor
+`std::terminate()` was called and the process returns 0 (`EXIT_SUCCESS`).
+
+As soon as something changes with the hardware, OS, compiler, libraries etc. the
+hard-won tests can be rebuild and trust can be regained again.
+
+Pudding works nicely on top of **Docker images** and **Yocto Linux Bitbake
+recipes**, with Docker or Yocto providing the system basis and Pudding the basis
+for the programming techniques used in the actual application.
 
 # EXAMPLES
 
