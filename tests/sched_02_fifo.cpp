@@ -1,16 +1,10 @@
 /*
- * SCHED_FIFO realtime test
+ * SCHED_FIFO test
  *
  * Runs threads under SCHED_FIFO realtime policy with same priority that
  * decrement an unguarded global integer. Each thread expects a certain value
  * before decrementing the integer so the order which realtime threads are
  * scheduled is strictly checked, or the process fails.
- *
- * Replace SCHED_FIFO by SCHED_RR and this test can go wrong with a probability
- * of approx. 0.1%. The only reason why this probability is not higher is the
- * shortness of decrement().
- *
- * About the SCHED_FIFO scheduling policy:
  *
  * - SCHED_FIFO threads belong to the cathegory of the real-time (RT) processes.
  *   Real-time processes are in charge of critical tasks whose execution cannot
@@ -50,6 +44,9 @@ int main(int argc, char *argv[])
   int expected[] { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
   pthread::context a[] {
+    /* Replace SCHED_FIFO by SCHED_RR and this test can go wrong with a
+       probability of approx. 0.1%. The only reason why this probability is not
+       higher is the shortness of decrement(). */
     pthread::create(decrement, &expected[0], SCHED_FIFO, 10),
     pthread::create(decrement, &expected[1], SCHED_FIFO, 10),
     pthread::create(decrement, &expected[2], SCHED_FIFO, 10),
