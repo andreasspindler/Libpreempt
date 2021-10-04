@@ -5,7 +5,7 @@ author: Andreas Spindler <info@andreasspindler.de>
 
 # NAME
 
-*Libpreempt* -- C++ test framework for embedded systems and realtime programming
+*Libpreempt* -- C++ framework for embedded systems and realtime programming
 
 # DESCRIPTION
 
@@ -97,7 +97,7 @@ isolate and reproduce [possible] bugs.
 As one can see categories are based on each another:
 
 ```
-       std ==> task ===| 
+       std ==> task ===|
                        |===> scheduling ==> process
    pthread ==> task ===|
 ```
@@ -242,11 +242,53 @@ cup of tea).
  $ pudding test
 ```
 
-# BACKGROUND
+# FAQ
 
-## RTOS
+## Why can realtime tests fail?
 
-The specific description of real-time is that processes have minimum response
+If the code is running under a RTOS and Linux RT-throttling is disabled, the
+only other thing known to mess with the realtime scheduling policies is the
+memory manager. To disable pagefaults all pages must be locked before letting
+`pthread_create()` create FIFO or RR threads:
+
+``` c++
+#include <preempt/process.h>
+
+int main(int argc, char *argv[])
+{
+  preempt::this_process::begin_realtime();
+  // can safely start realtime threads
+  preempt::this_process::end_realtime();
+  return 0
+}
+```
+
+Basically `begin_realtime()` locks all process memory so that the VMM can't
+interrupt the process.
+
+## Is a Linux realtime kernel required to use realtime scheduling?
+
+No. Realtime scheduling is POSIX function available on all Linux kernels. A
+kernel built with the realtime patches is needed if:
+
+- You want to run software with very low latency settings that require realtime
+  performance that can only be achieved with an RT kernel.
+
+- Your hardware configuration triggers poor latency behaviour which might be
+  improved with an RT kernel.
+
+## Does Yocto-Linux has a realtime-kernel?
+
+Yes.
+
+## What is an RTOS?
+
+**The basis of an RTOS is a real-time scheduler for threads and processes**. A
+RT scheduler operates in O(1) time or, under Linux, as CFS (*Completely Fair
+Scheduler*). While an RTOS requires an RT scheduler it also needs predictable
+"real-time" behaviors in the other parts of the OS too.
+
+The specific description of "real-time" is that processes have minimum response
 time guarantees. **The system should behave as predictably as possible.** This
 means that it should always take up the same period of time, regardless of the
 data to be processed, and this period must be measurable.
@@ -257,19 +299,73 @@ task is disadvantaged. A task is not disadvantaged if its preset priority,
 affinity and scheduling policy is always adhered to by the OS. Only real-time
 tasks have a priority and a scheduling policy.
 
-**The basis is a real-time scheduler for threads and processes**. A RT scheduler
-operates in O(1) time or, under Linux, as CFS (*Completely Fair Scheduler*).
-While an RTOS requires an RT scheduler it also needs predictable behaviors in
-the other parts of the OS too.
+## How predictable is an RTOS?
 
 It is usually sufficient if the system is **predictable for a specific,
 practical problem** (application) and not for all conceivable questions.
 
+## How does Preemptive Multitasking work for realtime systems?
+
+Preemptive multitasking creates the illusion that multiple processes and threads
+run concurrently on a single processor, while these are actually only assigned a
+small time slice. If the time slice is exceeded, the process or thread is
+"preempted", i.e. interrupted and has to wait for its next time slice.
+
+Realtime threads are an exception here. They are only interrupted if a thread
+with a higher priority (FIFO) or the same priority (RR) is to run, or if
+`sched_yield()` is called explicitly.
+
+This means that a realtime thread can take over and paralyze the entire system
+if it does not return quickly enough or in the case of longer jobs voluntarily
+calls `sched_yield()`.
+
+For this reason, RT throttling is activated under Linux: by default, 5% of the
+CPU time is also assigned to non-RT threads every second.
+
+## How does Cooperative Multitasking work for realtime systems?
+
+> Cooperative multitasking, also known as non-preemptive multitasking, is a
+> style of computer multitasking in which the operating system never initiates a
+> context switch from a running process to another process. Instead, processes
+> voluntarily yield control periodically or when idle or logically blocked in
+> order to enable multiple applications to be run concurrently.
+>
+> *Cooperative multitasking*
+> https://en.wikipedia.org/wiki/Cooperative_multitasking
+
+The principle is also used to schedule jobs attached to threads in realtime
+systems. Each job is expected to complete within a give timeslice, for example,
+200ms. If the thread can guarantee this it does not matter much if the scheduler
+is implemented preemptively or cooperatively.
+
+# APPENDIX
+
+## Some details about POSIX realtime scheduling (SCHED_FIFO, SCHED_RR)
+
+FIFO and RR threads belong to the cathegory of the real-time (RT) processes.
+Real-time processes are in charge of critical tasks whose execution cannot be
+interrupted. These tasks are usually involved in multimedia processing.
+
+- Because realtime threads prevent any non-realtime threads (including all
+  `std::thread`) from running, in general **their life-time should be [very]
+  short**.
+
+- The thread **may or may not have started when `pthread_create()` returns** but
+  `SCHED_FIFO` threads are always executed in the order of their creation.
+
+- On **multicore systems** the kernel will not run multiple threads on multiple
+  cores simultaneously, which would violate the defined behavior. A thread
+  scheduled FIFO or RR, when selected for running, will continue to use the CPU
+  until either it is blocked by an I/O request, it is preempted by a higher
+  priority FIFO or RR, or it calls `sched_yield()`.
+
+https://man7.org/linux/man-pages/man7/sched.7.html
+
 ## Execution privileges required to start realtime threads
 
-Unless the user has scheduling privileges executing tests that use one of the
-realtime scheduling policies will fail (permission denied). Use the `-S` option
-to prefix each run of a compiled executable with `sudo`. Alternatively:
+Unless the user has **scheduling privileges** executing tests that use one of
+the realtime scheduling policies will fail (permission denied). Use the `-S`
+option to prefix each run of a compiled executable with `sudo`. Alternatively:
 
 ``` sh
  $ alias pudding='sudo ./pudding.sh'
