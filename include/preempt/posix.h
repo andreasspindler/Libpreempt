@@ -1,6 +1,6 @@
 /* -*-coding:raw-text-unix-*-
  *
- * preempt/pthread.h -- POSIX threads
+ * preempt/posix.h -- POSIX threads
  */
 #pragma once
 
@@ -15,14 +15,36 @@ namespace preempt {
 namespace pthread {
 typedef void*(*function)(void*);
 
+/**
+ * Modeled auft std::thread::id this calls too is a lightweight, trivially
+ * copyable class that serves as a unique identifier of schedulabe objects.
+ *
+ * Instances of this class may also hold the special distinct value that does
+ * not represent any thread. Once a thread has finished, the value of
+ * std::thread::id may be reused by another thread.
+ *
+ * Like std::This class is designed for use as key in associative containers, both ordered
+ * and unordered.
+ */
+
 struct context {
-  pthread_t id {};
-  std::shared_ptr<::pthread_attr_t> attrp {};
-  std::shared_ptr<::sched_param> schp {};
   bool good = true;
   std::string error;
+  typedef pthread_t id_type;
+  id_type id {};
+  std::shared_ptr<::pthread_attr_t> attrp {};
+  std::shared_ptr<::sched_param> schp {};
   explicit operator bool() const noexcept { return good; }
 };
+
+using handle = context;
+
+inline
+context
+null_context() {
+  static context result = { true, "null_context" };
+  return result;
+}
 
 inline
 context
@@ -59,4 +81,3 @@ join(context thread) {
 }
 } // pthread
 } // preempt
-

@@ -12,7 +12,7 @@
  * pthread_create() was called.
  */
 #include <preempt/process.h>
-#include <preempt/pthread.h>
+#include <preempt/posix.h>
 
 #include <cassert>
 

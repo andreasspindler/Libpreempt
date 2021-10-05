@@ -36,16 +36,19 @@ Task
 Scheduler
 : A scheduler class allows tasks to run under a clearly defined algorithm.
 
-The library is build around the class
-`preempt::realtime_thread<SCHEDULING_POLICY>` which is basically equal to
-`std::thread` but for realtime threads. That is, threads with a priority above 0
-and a realtime policy such as `SCHED_FIFO` or `SCHED_RR`. The standard [yet]
-implements no realtime threads.
+Unlike the C++ standard library this library is designed for POSIX systems.
+`preempt::thread` has the same interface as `std::thread` but with an optional
+priority and a scheduling policy. If 0 and SCHED_OTHER is used (the defaults)
+then it works like `std::thread`. 
 
-Both classes, `std::thread` and `preempt::realtime_thread` spawn a system thread
-in the constructor and run in cooperation with other threads. within a process
-None of both provide any way to non-cooperatively kill a thread because this is
-generally a bad idea.
+Both classes, `std::thread` and `preempt::thread` spawn a system thread in the
+constructor and run in cooperation with other threads within a process.
+
+Etymology:
+
+The name "preempt" is short for preemptive. The name is a reminder that realtime
+threads are only preempted by threads with higher priorities (FIFO) or the same
+priority (RR), or they deliberately call `sched_yield()`
 
 ## Unit tests
 
@@ -104,6 +107,17 @@ hard-won tests can be rebuild and trust can be regained again.
 Pudding works nicely on top of **Docker images** and **Yocto Linux Bitbake
 recipes**, with Docker or Yocto providing the system basis and Pudding the basis
 for the programming techniques used in the actual application.
+
+Etymology:
+
+The name was inspired by the expression "the proof is in the pudding."
+Generally, it is used to say the best test of a pudding is to eat it. The real
+worth or effectiveness of something can only be determined by putting it to the
+test by trying or using it, over and over again, standards, versions and
+promises aside.
+
+Since it operates inside a computer `pudding.sh` expects that no process will
+fail *ever*. Either they all succeed or there are bugs.
 
 # EXAMPLES
 
@@ -368,17 +382,6 @@ option to prefix each run of a compiled executable with `sudo`. Alternatively:
 ``` sh
  $ alias pudding='sudo ./pudding.sh'
 ```
-
-## Etymology
-
-The name of the script `pudding.sh` was inspired by the expression "the proof is
-in the pudding." Generally, it is used to say the best test of a pudding is to
-eat it. The real worth or effectiveness of something can only be determined by
-putting it to the test by trying or using it, over and over again, standards,
-versions and promises aside.
-
-Since it operates inside a computer `pudding.sh` expects that no process will
-fail *ever*. Either they all succeed or there are bugs.
 
 # AUTHOR/COPYRIGHT
 

@@ -11,7 +11,7 @@
  * or a lower priority than the last FIFO thread.
  */
 #include <preempt/process.h>
-#include <preempt/pthread.h>
+#include <preempt/posix.h>
 
 #include <cstdlib>              // exit()
 #include <cassert>              // assert()

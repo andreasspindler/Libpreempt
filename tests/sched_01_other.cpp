@@ -4,7 +4,7 @@
  *
  * Runs threads under SCHED_OTHER default policy (non-realtime, unprioritized).
  */
-#include <preempt/pthread.h>
+#include <preempt/posix.h>
 
 #include <cassert>
 #include <iostream>
