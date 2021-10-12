@@ -4,6 +4,7 @@
 #include <thread>
 #include <string>
 #include <cassert>
+#include <memory>
 
 using namespace std;
 
