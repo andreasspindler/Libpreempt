@@ -1,6 +1,8 @@
 /*
  * By definition a task is an object containing one ore more worker threads.
  *
+ * In this test we define two task classes.
+ *
  * MonoTask: class with std::thread attribute
  *
  * PolyTask: class with std::vector<std::thread> attribute
@@ -106,3 +108,5 @@ PolyTask::join() {
     t.join();
   }
 }
+
+/* EOF */

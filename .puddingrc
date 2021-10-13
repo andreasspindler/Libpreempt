@@ -26,7 +26,7 @@ in
     #
     # parinama is a Sanskrit word and means development, change
     #
-    Tests=($(find_tests $TestDir '_*.cpp'))
+    Tests=($(find_tests $TestDir 'std_**.cpp'))
     ;;
 esac
 

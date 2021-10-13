@@ -14,7 +14,6 @@
 namespace preempt {
 namespace pthread {
 typedef void*(*function)(void*);
-
 /**
  * Modeled auft std::thread::id this calls too is a lightweight, trivially
  * copyable class that serves as a unique identifier of schedulabe objects.
@@ -26,7 +25,6 @@ typedef void*(*function)(void*);
  * Like std::This class is designed for use as key in associative containers, both ordered
  * and unordered.
  */
-
 struct context {
   bool good = true;
   std::string error;

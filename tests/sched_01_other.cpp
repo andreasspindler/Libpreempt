@@ -9,10 +9,12 @@
 
 #include <iostream>
 
+#define X "Om Namaha Shivaya"
+
 void* thread_function1(void* arg)
 {
   pthread_t id = pthread_self();
-  VERIFY(std::string(static_cast<char const*>(arg)) == "test");
+  VERIFY(std::string(static_cast<char const*>(arg)) == X);
   return nullptr;
 }
 
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
 {
   using namespace preempt;
 
-  char argument[] = "test";
+  char argument[] = X;
 
   /* thread_function1 */
   auto context = pthread::create(thread_function1, argument);
