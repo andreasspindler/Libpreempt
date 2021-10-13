@@ -72,12 +72,12 @@ namespace base {
    *
    * This function exits with EXIT_FAILURE.
    */
-  void oops(char const* descr) NORETURN;
-  void oops(char const* descr, char const* file, unsigned line) NORETURN;
+  void fail(char const* descr) NORETURN;
+  void fail(char const* descr, char const* file, unsigned line) NORETURN;
 
   inline
   void
-  oops(char const* descr) {
+  fail(char const* descr) {
     if (descr) {
       if (errno)
         std::perror(descr);
@@ -96,13 +96,13 @@ namespace base {
 
   inline
   void
-  oops(char const* descr, char const* file, unsigned line) {
-    std::fprintf(stderr, "OOPS: %s(%u): ", file, line);
-    oops(descr);
+  fail(char const* descr, char const* file, unsigned line) {
+    std::fprintf(stderr, "FAIL: %s(%u): ", file, line);
+    fail(descr);
   }
-#define TRACE           ::base::trace
-#define OOPS(expr)      do { if (!(expr)) ::base::oops(#expr, __FILE__, __LINE__); } while ((0))
-#define BADSYSCALL(str) (::base::oops(str, __FILE__, __LINE__), false)
+#define TRACE             ::base::trace
+#define VERIFY(expr)      do { if (!(expr)) ::base::fail(#expr, __FILE__, __LINE__); } while ((0))
+#define BADSYSCALL(str)   (::base::fail(str, __FILE__, __LINE__), false)
 
   /**
    * Print to STDERR with timestamp prefix.

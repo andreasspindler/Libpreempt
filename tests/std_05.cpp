@@ -4,7 +4,8 @@
 #include <array>
 #include <thread>
 #include <string>
-#include <cassert>
+
+#include <base/verify.h>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ class Task
 public:
   void operator()(std::string arg) const
     {
-      assert(arg == "work");
+      VERIFY(arg == "work");
     }
 };
 

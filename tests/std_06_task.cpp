@@ -8,7 +8,8 @@
 #include <vector>
 #include <thread>
 #include <string>
-#include <cassert>
+
+#include <base/verify.h>
 
 using namespace std;
 
@@ -49,9 +50,9 @@ int main(int argc, char *argv[])
 {
   class Test {
   public:
-    void eins(int n) const { assert(n == 1); }
-    void zwei(int n) const { assert(n == 2); }
-    void drei(int const& n) const { assert(n == 3); }
+    void eins(int n) const { VERIFY(n == 1); }
+    void zwei(int n) const { VERIFY(n == 2); }
+    void drei(int const& n) const { VERIFY(n == 3); }
   } t;
 
   int x = 3;

@@ -3,8 +3,9 @@
  */
 #include <thread>
 #include <string>
-#include <cassert>
 #include <memory>
+
+#include <base/verify.h>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ class Task {
 public:
   void
   execute(std::string arg) {
-    assert(arg == "example");
+    VERIFY(arg == "example");
   }
 };
 

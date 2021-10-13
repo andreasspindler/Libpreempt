@@ -197,12 +197,14 @@ EOF
 # $(basename "$(pwd)")/$TestMakefile
 #    $(date -u)
 #
+.PHONY: all build clean
+
 all: build
 build: ${!Targets[@]}
 EOF
     for k in "${!Targets[@]}"
     do
-      echo "$k: ../../${Targets[$k]} ../../src/*.cpp" >>$TestMarchDir/$TestMakefile
+      echo "$k: ../../${Targets[$k]} \$(wildcard ../../src/*.cpp)" >>$TestMarchDir/$TestMakefile
       echo -e "\t${Rules[$k]}" >>$TestMarchDir/$TestMakefile
     done
     cat >>$TestMarchDir/$TestMakefile <<EOF

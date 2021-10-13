@@ -6,7 +6,8 @@
  */
 #include <thread>
 #include <string>
-#include <cassert>
+
+#include <base/verify.h>
 
 using namespace std;
 
@@ -19,12 +20,12 @@ public:
 
   void operator()(std::string arg) const
     {
-      assert(arg == "example");
+      VERIFY(arg == "example");
     }
 
   void operator()(int n) const
     {
-      assert(n == 42);
+      VERIFY(n == 42);
     }
 };
 

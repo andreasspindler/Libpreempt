@@ -14,7 +14,7 @@
 #include <preempt/process.h>
 #include <preempt/posix.h>
 
-#include <cassert>
+#include <base/verify.h>
 
 using namespace preempt;
 
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   };
 
   for (int i = 0; i < 10; ++i) {
-    assert(handle[i]);
+    VERIFY(handle[i]);
     pthread::join(handle[i]);
   }
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 void* decrement(void *expected)
 {
-  assert(global_value == *(int*)(expected));
+  VERIFY(global_value == *(int*)(expected));
   global_value--;
   return nullptr;
 }

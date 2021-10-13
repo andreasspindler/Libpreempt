@@ -4,7 +4,8 @@
 #include <vector>
 #include <thread>
 #include <string>
-#include <cassert>
+
+#include <base/verify.h>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ public:
   static
   void
   execute(std::string arg) {
-    assert(arg == "example");
+    VERIFY(arg == "example");
   }
 };
 

@@ -5,14 +5,14 @@
  * Runs threads under SCHED_OTHER default policy (non-realtime, unprioritized).
  */
 #include <preempt/posix.h>
+#include <base/verify.h>
 
-#include <cassert>
 #include <iostream>
 
 void* thread_function1(void* arg)
 {
   pthread_t id = pthread_self();
-  assert(std::string(static_cast<char const*>(arg)) == "test");
+  VERIFY(std::string(static_cast<char const*>(arg)) == "test");
   return nullptr;
 }
 

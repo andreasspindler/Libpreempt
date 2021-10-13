@@ -1,10 +1,10 @@
 /*
  * SCHED_FIFO test -- different priorities
  *
- * Runs threads under SCHED_FIFO realtime policy with different priorities that
- * decrement an unguarded global integer. Each thread expects a certain value
- * before decrementing the integer so the order which realtime threads are
- * scheduled is strictly checked or the process fails.
+ * Runs threads under SCHED_FIFO realtime policy with different priorities. Each
+ * threads decrement an unguarded global integer. Before doing this it expects a
+ * certain value so that the order in which realtime threads are scheduled is
+ * strictly checked.
  *
  * Note that the decrement operation is neither atomic nor implemented using a
  * lock. This is unnecessary as long as the threads were started with the same
@@ -13,8 +13,9 @@
 #include <preempt/process.h>
 #include <preempt/posix.h>
 
+#include <base/verify.h>
+
 #include <cstdlib>              // exit()
-#include <cassert>              // assert()
 #include <memory>
 #include <vector>
 
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
 
 void* decrement(void *expected)
 {
-  assert(global_value == *(int*)(expected));
+  VERIFY(global_value == *(int*)(expected));
   global_value--;
   return nullptr;
 }
@@ -67,7 +68,7 @@ run(int (&priority_table)[N])
   shared_ptr<int> expected[N];
 
   for (int i = 0; i < N; i++) {
-    assert(i == 0 || priority_table[i] <= priority_table[i - 1]);
+    VERIFY(i == 0 || priority_table[i] <= priority_table[i - 1]);
     expected[i] = make_shared<int>(N - i);
   }
 
@@ -78,7 +79,7 @@ run(int (&priority_table)[N])
   }
 
   for (auto h : handle) {
-    assert(h);
+    VERIFY(h);
     pthread::join(h);
   }
 

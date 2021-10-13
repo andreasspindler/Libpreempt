@@ -3,7 +3,8 @@
  */
 #include <thread>
 #include <string>
-#include <cassert>
+
+#include <base/verify.h>
 
 using namespace std;
 
@@ -14,12 +15,12 @@ void* Task1(void* arg) {
 }
 
 void* Task2(char const* arg) {
-  assert(std::string(arg) == X);
+  VERIFY(std::string(arg) == X);
   return nullptr;
 }
 
 void Task3(char const* arg, int n) {
-  assert(n == 42);
+  VERIFY(n == 42);
   Task2(arg);
 }
 
