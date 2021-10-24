@@ -12,19 +12,21 @@
 #include <thread>
 #include <memory>
 #include <cstring>              // std::strerror
+#include <string>
 
 namespace preempt {
 /**
  * @brief Like std::thread but allow POSIX scheduling policies and a priority
  *
  * std::thread and preempt::thread have the same interface. preempt::thread has
- * an add additional method change_policy and a constructor that accepts a
- * priority.
+ * a constructor that accepts a priority and an additional method @ref
+ * change_scheduling_policy.
  *
- * To start a thread delayed use the default ctor and later:
+ * Example:
  *
- *     thread thr;            // exists
- *     thr = thread(function) // runs
+ *     preempt::thread thr;            // exists
+ *     thr = preempt::thread(function) // runs normally
+ *     thr = preempt::thread<SCHED_FIFO>(10, function) // runs with priority
  *
  * @see https://en.cppreference.com/w/cpp/thread/thread
  */
@@ -34,6 +36,14 @@ public:
   using native_handle_type = std::thread::native_handle_type;
   using id = std::thread::id;
 
+  /** Creates new thread object which does not represent a thread. */
+  thread() noexcept;
+
+  /** Move constructor. Constructs the thread object to represent the thread of
+      execution that was represented by other. After this call other no longer
+      represents a thread of execution. */
+  thread(thread&& other) noexcept;
+
   /** Construct new, normal thread object. Under POSIX this means a thread
       running under the SCHED_OTHER scheduling policy and priority 0.
   */
@@ -42,10 +52,10 @@ public:
 
   /** Start a realtime thread with a certain scheduling policy and priority.
       Before the ctor returns the thread may not only begin execution, but also
-      can preempt any other threads with a lower priority (@ref change_policy).
+      can preempt any other threads with a lower priority (@ref change_scheduling_policy).
   */
-  template<int SCHED, class Function, class... Args>
-  explicit thread(int priority, Function&&, Args&&...);
+  template<class Function, class... Args>
+  explicit thread(int policy, int priority, Function&&, Args&&...);
 
   /** Free the occupied system resources. */
   ~thread();
@@ -120,33 +130,42 @@ public:
   /** Modify scheduling policy and priority of the already running thread.
       Return true if this is successful. Under Linux fails if the user is not a
       member of the realtime group (try `std::strerror(errno)`).
-  */
-  template <int SCHED>
-  bool
-  try_policy(int priority) noexcept;
 
-  /** Like try_policy() but call std::terminate() if it fails. To test if a
+      Note that this implementation depends on @ref native_handle() and POSIX
+      threads. The POSIX realtime policies do not require a realtime scheduler.
+  */
+  bool
+  try_scheduling_policy(int policy, int priority) noexcept;
+
+  /** Like try_scheduling_policy() but call std::terminate() if it fails. To test if a
       realtime scheduler is available use:
 
          VERIFY(base::have_realtime_kernel())
-
-      Note that the POSIX realtime policies do not require a realtime scheduler.
   */
-  template <int SCHED>
   void
-  change_policy(int priority);
+  change_scheduling_policy(int policy, int priority);
+
+  std::string last_error() const noexcept { return error_; }
 
 private:
   std::thread impl_;
+  std::string error_;
 };
+
+inline
+thread::thread() noexcept {}
+
+inline
+thread::thread(thread&& other) noexcept
+  : impl_ {std::move(other.impl_)} {}
 
 template<class Function, class... Args>
 thread::thread(Function&& f, Args&&... args)
   : impl_ {std::forward<Function>(f), std::forward<Args>(args)...} { }
 
-template<int SCHED, class Function, class... Args>
-thread::thread(int priority, Function&& f, Args&&... args)
-  : thread{std::forward<Function>(f), std::forward<Args>(args)...} { change_policy<SCHED>(priority); }
+template<class Function, class... Args>
+thread::thread(int policy, int priority, Function&& f, Args&&... args)
+  : thread{std::forward<Function>(f), std::forward<Args>(args)...} { change_scheduling_policy(policy, priority); }
 
 inline
 thread::~thread() {}
@@ -193,26 +212,39 @@ thread::swap(thread& other) noexcept {
   return impl_.swap(other.impl_);
 }
 
-template <int SCHED>
+
 bool
-thread::try_policy(int priority) noexcept {
-  ::sched_param sch;
-  int policy = SCHED;
+thread::try_scheduling_policy(int new_policy, int priority) noexcept {
   auto handle = impl_.native_handle();
-  ::pthread_getschedparam(handle, &policy, &sch);
-  sch.sched_priority = priority;
-  if (::pthread_setschedparam(handle, SCHED, &sch)) {
+  struct ::sched_param param;
+  int policy;
+  ::pthread_getschedparam(handle, &policy, &param);
+  param.sched_priority = priority;
+  if (::pthread_setschedparam(handle, new_policy, &param)) {
+    if (errno) {
+#if 0
+      char buffer[512];
+      std::sprintf(buffer, "%d=%s", errno, std::strerror(errno));
+      error_ = buffer;
+#endif
+      error_ = std::strerror(errno);
+    } else {
+      error_ = "pthread_setschedparam() failed and errno=0";
+    }
     return false;
+  } else {
+    return true;
   }
-  return true;
 }
 
-template <int SCHED>
 void
-thread::change_policy(int priority) {
-  if (try_policy<SCHED>(priority))
+thread::change_scheduling_policy(int policy, int priority) {
+  if (try_scheduling_policy(policy, priority)) {
     return;
-  std::terminate();
+  } else {
+    /* terminate called without an active exception */
+    std::terminate();
+  }
 }
 
 inline

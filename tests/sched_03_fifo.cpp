@@ -76,6 +76,7 @@ run(int (&priority_table)[N])
   pthread::context handle[N];
   for (int i = 0; i < N; i++) {
     handle[i] = pthread::create(decrement, expected[i].get(), Policy, priority_table[i]);
+    VERIFY(handle[i]);
   }
 
   for (auto h : handle) {
