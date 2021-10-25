@@ -3,12 +3,11 @@
 #
 # .puddingrc -- Project resource file
 #
-# The purpose of this file is to set global variables based on the
-# current value of
+# Set global variables based on the current value of
 #
 #    $TestFlavor
 #
-# The value is set to -c NAME argument passed to "pudding.sh"
+# The value is set by "pudding.sh -f FLAVOR".
 #
 TestTarget='Libpreempt'
 
@@ -26,7 +25,7 @@ in
     #
     # parinama is a Sanskrit word and means development, change
     #
-    Tests=($(find_tests $TestDir 'std_**.cpp'))
+    Tests=($(find_tests $TestDir 'std_05*.cpp'))
     ;;
 esac
 

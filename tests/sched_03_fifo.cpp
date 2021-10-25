@@ -11,11 +11,13 @@
  * or a lower priority than the last FIFO thread.
  */
 #include <preempt/process.h>
-#include <preempt/posix.h>
+#include <preempt/posix_thread.h>
 
 #include <base/verify.h>
 
-#include <cstdlib>              // exit()
+#include <iostream>
+
+#include <cstdlib>
 #include <memory>
 #include <vector>
 
@@ -34,8 +36,7 @@ int main(int argc, char *argv[])
 {
   this_process::begin_realtime();
 
-  // FIFO: decreasing or equal priorities
-  { int tab[] = {  0,  0,  0 }; run<SCHED_FIFO>(tab); }
+  // FIFO: decreasing or equal priorities (only higher than 0 allowed)
   { int tab[] = {  1,  1,  1 }; run<SCHED_FIFO>(tab); }
   { int tab[] = { 10, 10, 10 }; run<SCHED_FIFO>(tab); }
   { int tab[] = { 30, 20, 10 }; run<SCHED_FIFO>(tab); }
@@ -73,15 +74,21 @@ run(int (&priority_table)[N])
   }
 
   /* start and join threads */
-  pthread::context handle[N];
+  posix_thread context[N];
   for (int i = 0; i < N; i++) {
-    handle[i] = pthread::create(decrement, expected[i].get(), Policy, priority_table[i]);
-    VERIFY(handle[i]);
+    context[i] = posix_thread(Policy, priority_table[i], decrement, expected[i].get());
+    if (context[i].joinable) {
+      continue;
+    } else {
+      std::cerr << context[i].last_error << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    VERIFY(context[i]);
   }
 
-  for (auto h : handle) {
-    VERIFY(h);
-    pthread::join(h);
+  for (auto c : context) {
+    VERIFY(c);
+    c.join();
   }
 
   /* after N decrement() the value has to be 0 again */

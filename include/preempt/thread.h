@@ -4,8 +4,6 @@
  */
 #pragma once
 
-#include <preempt/posix.h>
-
 #include <base/details/system.h>
 #include <base/string.h>
 
@@ -45,14 +43,15 @@ public:
   thread(thread&& other) noexcept;
 
   /** Construct new, normal thread object. Under POSIX this means a thread
-      running under the SCHED_OTHER scheduling policy and priority 0.
+      running under the SCHED_OTHER scheduling policy and priority 0.  To set a new scheduling policy and priority @ref try_scheduling().
   */
   template<class Function, class... Args>
   explicit thread(Function&& f, Args&&... args);
 
   /** Start a realtime thread with a certain scheduling policy and priority.
       Before the ctor returns the thread may not only begin execution, but also
-      can preempt any other threads with a lower priority (@ref change_scheduling_policy).
+      can preempt any other threads with a lower priority (@ref
+      change_scheduling).
   */
   template<class Function, class... Args>
   explicit thread(int policy, int priority, Function&&, Args&&...);
@@ -109,9 +108,8 @@ public:
 
   /** Separates the thread of execution from the thread object, allowing
       execution to continue independently. Any allocated resources will be freed
-      once the thread exits.
-
-      After calling detach *this no longer owns any thread.
+      once the thread exits. After calling detach *this no longer owns any
+      thread.
   */
   void
   detach();
@@ -128,22 +126,23 @@ public:
   hardware_concurrency();
 
   /** Modify scheduling policy and priority of the already running thread.
-      Return true if this is successful. Under Linux fails if the user is not a
-      member of the realtime group (try `std::strerror(errno)`).
+      Return true if this is successful, false otherwise (failure). Probably
+      fails if the thread has already terminated. Under Linux fails if the user
+      is not a member of the realtime group (try `std::strerror(errno)`).
 
       Note that this implementation depends on @ref native_handle() and POSIX
-      threads. The POSIX realtime policies do not require a realtime scheduler.
+      threads.
   */
   bool
-  try_scheduling_policy(int policy, int priority) noexcept;
+  try_scheduling(int policy, int priority) noexcept;
 
-  /** Like try_scheduling_policy() but call std::terminate() if it fails. To test if a
+  /** Like try_scheduling() but call std::terminate() if it fails. To test if a
       realtime scheduler is available use:
 
          VERIFY(base::have_realtime_kernel())
   */
   void
-  change_scheduling_policy(int policy, int priority);
+  change_scheduling(int policy, int priority);
 
   std::string last_error() const noexcept { return error_; }
 
@@ -165,7 +164,7 @@ thread::thread(Function&& f, Args&&... args)
 
 template<class Function, class... Args>
 thread::thread(int policy, int priority, Function&& f, Args&&... args)
-  : thread{std::forward<Function>(f), std::forward<Args>(args)...} { change_scheduling_policy(policy, priority); }
+  : thread{std::forward<Function>(f), std::forward<Args>(args)...} { change_scheduling(policy, priority); }
 
 inline
 thread::~thread() {}
@@ -214,35 +213,21 @@ thread::swap(thread& other) noexcept {
 
 
 bool
-thread::try_scheduling_policy(int new_policy, int priority) noexcept {
-  auto handle = impl_.native_handle();
-  struct ::sched_param param;
+thread::try_scheduling(int new_policy, int new_priority) noexcept {
+  sched_param sch;
   int policy;
-  ::pthread_getschedparam(handle, &policy, &param);
-  param.sched_priority = priority;
-  if (::pthread_setschedparam(handle, new_policy, &param)) {
-    if (errno) {
-#if 0
-      char buffer[512];
-      std::sprintf(buffer, "%d=%s", errno, std::strerror(errno));
-      error_ = buffer;
-#endif
-      error_ = std::strerror(errno);
-    } else {
-      error_ = "pthread_setschedparam() failed and errno=0";
-    }
+  pthread_getschedparam(native_handle(), &policy, &sch); // get current policy and priority
+  sch.sched_priority = new_priority;
+  if (int errnum = pthread_setschedparam(native_handle(), new_policy, &sch)) {
+    error_ = base::sprintf("FAILED: pthread_setschedparam(): '%s'", std::strerror(errnum));
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 void
-thread::change_scheduling_policy(int policy, int priority) {
-  if (try_scheduling_policy(policy, priority)) {
-    return;
-  } else {
-    /* terminate called without an active exception */
+thread::change_scheduling(int policy, int priority) {
+  if (false == try_scheduling(policy, priority)) {
     std::terminate();
   }
 }

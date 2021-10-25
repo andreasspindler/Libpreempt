@@ -55,8 +55,6 @@ Valid values for <CMD>:
 
   test      Compile all files on all optimization levels and try a few runs.
 
-  info      Get system information.
-
 The value of <FLAVOR> is stored in the global variable 'TestFlavor' and has to
 be evaluated in '.puddingrc' by modifying other global variables to override
 their defaults. These are:
@@ -218,7 +216,10 @@ EOF
   # execute commands
   #
   grep -q "^flags.*hypervisor" /proc/cpuinfo && RunningUnderVM=1 || RunningUnderVM=0
-  { uname -v | grep PREEMPT >/dev/null; } && RunningUnderPREEMPT=1 || RunningUnderPREEMPT=0
+  { uname -v | grep -w 'PREEMPT' >/dev/null; } && RunningUnderPREEMPT=1 || RunningUnderPREEMPT=0
+
+  ((RunningUnderVM)) && warn "running under VM"
+  ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel '$(uname -s)'"
 
   {
     Summary=0 TotalRuns=0 TotalGood=0 TotalBad=0 TotalMissing=0
@@ -226,11 +227,6 @@ EOF
       CmdSuccess=1
       BgPids=()
       case $Cmd in
-        'info')
-          ((RunningUnderVM)) && warn "running under VM"
-          ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel '$(uname -s)'"
-          ;;
-
         ########################################
         # list all tests
         #

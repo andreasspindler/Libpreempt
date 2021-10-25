@@ -4,7 +4,7 @@
  *
  * Runs threads under SCHED_OTHER default policy (non-realtime, unprioritized).
  */
-#include <preempt/posix.h>
+#include <preempt/posix_thread.h>
 #include <base/verify.h>
 
 #include <iostream>
@@ -25,14 +25,14 @@ int main(int argc, char *argv[])
   char argument[] = X;
 
   /* thread_function1 */
-  auto context = pthread::create(thread_function1, argument);
+  auto context = posix_thread(thread_function1, argument);
   if (context) {
-    context = pthread::join(context);
+    context.join();
     if (context)
       return EXIT_SUCCESS;
   }
 
   /* thread creation or join failed */
-  std::cerr << context.error << std::endl;
+  std::cerr << context.last_error << std::endl;
   return EXIT_FAILURE;
 }

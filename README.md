@@ -9,18 +9,99 @@ author: Andreas Spindler <info@andreasspindler.de>
 
 # DESCRIPTION
 
-The project consists of three components:
-- the C++ framework *Libpreempt*
-- the unit test tool *Pudding*
-- the C++ realtime test suite
+The project consists of two main components:
 
-Quick start:
+- the C++ real-time scheduler test suite
+
+- the C++ framework *Libpreempt*
+
+The name "preempt" is short for preemptive. The name is a reminder that
+real-time threads are only preempted by threads with higher priorities (FIFO) or
+the same priority (RR), or they deliberately call `sched_yield()`
+
+## Real-time scheduler test suite
+
+These tests will verify several attributes of the Linux real-time scheduler with
+regard to the POSIX scheduling policies *SCHED_FIFO* and *SCHED_RR*.
+
+To start the tests:
 
 ``` sh
- $ make
+ > sudo make
 ```
 
-## Libpreempt
+Make compiles all programs in the tests / folder for C ++ 14 and C ++ 17 and
+executes each compilation 100 times, counting the failed and successful
+attempts. Make is prefixed with *sudo* because unless the user has **scheduling
+privileges** executing programs that use one of the real-time scheduling
+policies will fail (permission denied).
+
+If the PREEMPT_RT patches are installed all tests should complete 100%,
+otherwise the rate of successful tests should be over 95% because POSIX does not
+require a real-time scheduler. For example, here is the output on an Ubuntu VM
+without preempt patches:
+
+Example:
+
+``` sh
+ > uname -v
+#60~20.04.1-Ubuntu SMP Thu May 6 09:52:46 UTC 2021
+ > sudo make
+./pudding.sh -D build 100
+### multivm Libpreempt(all) *** writing 'out/multivm-all/Makefile'
+### multivm Libpreempt(all) *** WARNING: running under VM
+### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 'Linux'
+### multivm Libpreempt(all) *** executing command '100' [Mon, 25 Oct 2021 18:23:39 +0200]
+### multivm Libpreempt(all) *** c++14 c++17 debug
+### multivm Libpreempt(all) *** 9 tests => 18 target(s) => 1800 total run(s)
+#   1/  18: sched_01_other.c++14.debug                      100 run(s)          0 bad        100 good
+#   2/  18: sched_01_other.c++17.debug                      100 run(s)          0 bad        100 good
+#   3/  18: sched_02_fifo.c++14.debug                       100 run(s)          0 bad        100 good
+#   4/  18: sched_02_fifo.c++17.debug                       100 run(s)          1 bad         99 good
+#   5/  18: sched_03_fifo.c++14.debug                       100 run(s)         31 bad         69 good
+#   6/  18: sched_03_fifo.c++17.debug                       100 run(s)         29 bad         71 good
+#   7/  18: std_01_thread.c++14.debug                       100 run(s)          0 bad        100 good
+#   8/  18: std_01_thread.c++17.debug                       100 run(s)          0 bad        100 good
+#   9/  18: std_02_nonstatic.c++14.debug                    100 run(s)          0 bad        100 good
+#  10/  18: std_02_nonstatic.c++17.debug                    100 run(s)          0 bad        100 good
+#  11/  18: std_03_array.c++14.debug                        100 run(s)          0 bad        100 good
+#  12/  18: std_03_array.c++17.debug                        100 run(s)          0 bad        100 good
+#  13/  18: std_04_lambda.c++14.debug                       100 run(s)          0 bad        100 good
+#  14/  18: std_04_lambda.c++17.debug                       100 run(s)          0 bad        100 good
+#  15/  18: std_05_scheduling.c++14.debug                   100 run(s)          0 bad        100 good
+#  16/  18: std_05_scheduling.c++17.debug                   100 run(s)          0 bad        100 good
+#  17/  18: task_01.c++14.debug                             100 run(s)          0 bad        100 good
+#  18/  18: task_01.c++17.debug                             100 run(s)          0 bad        100 good
+### multivm Libpreempt(all) *** 96.600% (1800 runs = 1739 good + 61 bad + 0 missing)
+```
+
+Every test has the form of a C++ file and has been carefully written in a way
+that (1) it runs one specific scenario and (2) is human readable.
+
+*tests/std_xxx.cpp*
+: C++ standard library. Currently tests exist for *std::thread* and other
+  classes dealing with concurrency.
+
+*tests/task_xxx.cpp*
+: Tests for classes contain *std::thread* or *pthread* members with the
+  intention of starting these as needed or based on events.
+
+*tests/sched_xxx.cpp*
+: Scheduling strategies for tasks. These culminate in easy-to-use classes for
+  the actual application.
+
+*tests/process_xxx.cpp*
+: Processes with [real-time] task schedulers. Also memory management and IPC.
+
+As one can see categories are based on each another:
+
+```
+       std ==> task ===|
+                       |===> scheduling ==> process
+   pthread ==> task ===|
+```
+
+## Real-time framework
 
 *Libpreempt* is a C++ library build the notion of **threads**, **tasks** and
 **schedulers**.
@@ -31,7 +112,7 @@ Thread
 
 Task
 : Any class with at least one thread attribute. Tasks can run standard threads
-  and realtime threads.
+  and real-time threads.
 
 Scheduler
 : A scheduler class allows tasks to run under a clearly defined algorithm.
@@ -44,49 +125,7 @@ then it works like `std::thread`.
 Both classes, `std::thread` and `preempt::thread` spawn a system thread in the
 constructor and run in cooperation with other threads within a process.
 
-Etymology:
-
-The name "preempt" is short for preemptive. The name is a reminder that realtime
-threads are only preempted by threads with higher priorities (FIFO) or the same
-priority (RR), or they deliberately call `sched_yield()`
-
-## Unit tests
-
-Practically all tests shipped in this repository have to do with realtime and
-concurrency. Every single test has been carefully written in a way that (1) it
-runs one specific scenario and (2) is human readable.
-
-On this basis one can pick a test and modify it or derive new tests from
-existing ones easily. Another motivation was to have an easy environment to
-isolate and reproduce [possible] bugs.
-
-*tests/std_xxx.cpp*
-: C++ standard library. Currently tests exist for *std::thread* and other
-  classes dealing with concurrency.
-
-*tests/pthread_xxx.cpp*
-: POSIX threads and [realtime] scheduling policies.
-
-*tests/task_xxx.cpp*
-: Tests for classes contain *std::thread* or *pthread* members with the
-  intention of starting these as needed or based on events.
-
-*tests/sched_xxx.cpp*
-: Scheduling strategies for tasks. These culminate in easy-to-use classes for
-  the actual application.
-
-*tests/process_xxx.cpp*
-: Processes with [realtime] task schedulers. Also memory management and IPC.
-
-As one can see categories are based on each another:
-
-```
-       std ==> task ===|
-                       |===> scheduling ==> process
-   pthread ==> task ===|
-```
-
-## Pudding
+## Unit test driver (Pudding)
 
 Pudding is the driver for the unit tests and implemented in a single script. It
 compiles a matrix of executables for each single test, runs them and summarizes
@@ -256,10 +295,10 @@ cup of tea).
 
 # FAQ
 
-## Why can realtime tests fail?
+## Why can real-time tests fail?
 
 If the code is running under a RTOS and Linux RT-throttling is disabled, the
-only other thing known to mess with the realtime scheduling policies is the
+only other thing known to mess with the real-time scheduling policies is the
 memory manager. To disable pagefaults all pages must be locked before letting
 `pthread_create()` create FIFO or RR threads:
 
@@ -268,28 +307,39 @@ memory manager. To disable pagefaults all pages must be locked before letting
 
 int main(int argc, char *argv[])
 {
-  preempt::this_process::begin_realtime();
-  // can safely start realtime threads
-  preempt::this_process::end_realtime();
+  preempt::this_process::begin_real-time();
+  // can safely start real-time threads
+  preempt::this_process::end_real-time();
   return 0
 }
 ```
 
-Basically `begin_realtime()` locks all process memory so that the VMM can't
+Basically `begin_real-time()` locks all process memory so that the VMM can't
 interrupt the process.
 
-## Is a Linux realtime kernel required to use realtime scheduling?
+## Is a Linux real-time kernel required to use real-time scheduling?
 
-No. Realtime scheduling is POSIX function available on all Linux kernels. A
-kernel built with the realtime patches is needed if:
+No. Real-Time scheduling is POSIX function available on all Linux kernels. A
+kernel built with the real-time patches is needed if:
 
-- You want to run software with very low latency settings that require realtime
+- You want to run software with very low latency settings that require real-time
   performance that can only be achieved with an RT kernel.
 
 - Your hardware configuration triggers poor latency behaviour which might be
   improved with an RT kernel.
+  
+## How to check if PREEMPT_RT patches are installed?
 
-## Does Yocto-Linux has a realtime-kernel?
+``` sh
+ $ uname -v
+ #60~20.04.1-Ubuntu SMP PREEMPT Thu May 6 09:52:46 UTC 2021
+                         ^
+                         |
+                         |
+                         this word must be printed
+```
+
+## Does Yocto-Linux has a real-time-kernel?
 
 Yes.
 
@@ -316,25 +366,25 @@ tasks have a priority and a scheduling policy.
 It is usually sufficient if the system is **predictable for a specific,
 practical problem** (application) and not for all conceivable questions.
 
-## How does Preemptive Multitasking work for realtime systems?
+## How does Preemptive Multitasking work for real-time systems?
 
 Preemptive multitasking creates the illusion that multiple processes and threads
 run concurrently on a single processor, while they are actually only assigned a
 small time slice. If the time slice is exceeded, the process or thread is
 "preempted", i.e. interrupted and has to wait for its next time slice.
 
-Realtime threads are an exception here. They are only interrupted if a thread
+Real-Time threads are an exception here. They are only interrupted if a thread
 with a higher priority (FIFO) or the same priority (RR) is to run, or if
 `sched_yield()` is called explicitly.
 
-This means that a realtime thread can take over and paralyze the entire system
+This means that a real-time thread can take over and paralyze the entire system
 if it does not return quickly enough or in the case of longer jobs voluntarily
 calls `sched_yield()`.
 
 For this reason, RT throttling is activated under Linux: by default 5% of the
 CPU time is also assigned to non-RT threads per second.
 
-## How does Cooperative Multitasking work for realtime systems?
+## How does Cooperative Multitasking work for real-time systems?
 
 > Cooperative multitasking, also known as non-preemptive multitasking, is a
 > style of computer multitasking in which the operating system never initiates a
@@ -345,43 +395,42 @@ CPU time is also assigned to non-RT threads per second.
 > *Cooperative multitasking*
 > https://en.wikipedia.org/wiki/Cooperative_multitasking
 
-The principle is also used to schedule jobs attached to threads in realtime
-systems. Each job is expected to complete within a give timeslice, for example,
+The principle is also used to schedule jobs attached to threads in real-time
+systems. Each job is expected to complete within a give time slice, for example,
 200ms. If the thread can guarantee this it does not matter much if the scheduler
 is implemented preemptively or cooperatively.
 
 # APPENDIX
 
-## Details about POSIX realtime scheduling (SCHED_FIFO, SCHED_RR)
+## Some details about POSIX real-time scheduling
 
-FIFO and RR threads belong to the cathegory of the real-time (RT) processes.
-Real-time processes are in charge of critical tasks whose execution cannot be
-interrupted. These tasks are usually involved in multimedia processing.
 
-- Because realtime threads prevent any non-realtime threads (including all
-  `std::thread`) from running, in general **their life-time should be [very]
-  short**.
+`SCHED_FIFO` is a simple scheduling algorithm without time slicing. `SCHED_RR`
+is a simple scheduling algorithm with time slice for processes/threads with the
+same priority. `SCHED_FIFO` and `SCHED_RR` processes/threads belong to the
+category of the real-time (RT) processes/threads.
+
+Real-Time processes/threads are in charge of critical tasks whose execution
+cannot be interrupted (usually involved in multimedia processing). Because
+real-time threads prevent any non-real-time threads from running, in general their
+life-time should be [very] short.
+
+## Some details about Pthreads
 
 - The thread **may or may not have started when `pthread_create()` returns** but
   `SCHED_FIFO` threads are always executed in the order of their creation.
 
 - On **multicore systems** the kernel will not run multiple threads on multiple
   cores simultaneously, which would violate the defined behavior. A thread
-  scheduled FIFO or RR, when selected for running, will continue to use the CPU
+  scheduled `SCHED_FIFO` or `SCHED_RR`, when selected for running, will continue to use the CPU
   until either it is blocked by an I/O request, it is preempted by a higher
-  priority FIFO or RR, or it calls `sched_yield()`.
+  priority `SCHED_FIFO` or `SCHED_RR`, or it calls `sched_yield()`.
+
+- `SCHED_FIFO` can be used only with static priorities higher than 0, which
+  means that when a `SCHED_FIFO` becomes runnable, it will always immediately
+  preempt any currently running `SCHED_OTHER`, `SCHED_BATCH`, or `SCHED_IDLE`.
 
 https://man7.org/linux/man-pages/man7/sched.7.html
-
-## Execution privileges required to start realtime threads
-
-Unless the user has **scheduling privileges** executing tests that use one of
-the realtime scheduling policies will fail (permission denied). Use the `-S`
-option to prefix each run of a compiled executable with `sudo`. Alternatively:
-
-``` sh
- $ alias pudding='sudo ./pudding.sh'
-```
 
 # AUTHOR/COPYRIGHT
 
