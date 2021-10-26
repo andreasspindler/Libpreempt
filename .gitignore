@@ -16,6 +16,7 @@ out/
 *.lnk
 *.stderr
 *.stdout
+_*.cpp
 
 # gdb -x scripts
 gdb*

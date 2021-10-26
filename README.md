@@ -5,15 +5,15 @@ author: Andreas Spindler <info@andreasspindler.de>
 
 # NAME
 
-*Libpreempt* -- C++ framework for embedded systems and realtime programming
+*Libpreempt* -- C++ realt-time test suite and framework
 
 # DESCRIPTION
 
 The project consists of two main components:
 
-- the C++ real-time scheduler test suite
+- the POSIX/C++ real-time scheduler test suite
 
-- the C++ framework *Libpreempt*
+- the POSIX/C++ framework
 
 The name "preempt" is short for preemptive. The name is a reminder that
 real-time threads are only preempted by threads with higher priorities (FIFO) or
@@ -21,8 +21,10 @@ the same priority (RR), or they deliberately call `sched_yield()`
 
 ## Real-time scheduler test suite
 
-These tests will verify several attributes of the Linux real-time scheduler with
-regard to the POSIX scheduling policies *SCHED_FIFO* and *SCHED_RR*.
+Every test has the form of a C++ file and has been carefully written in a way
+that (1) it runs one specific scenario and (2) is human readable. These tests
+will verify several attributes of the **Linux real-time scheduler** with regard
+to the POSIX scheduling policies **SCHED_FIFO** and **SCHED_RR**.
 
 To start the tests:
 
@@ -30,15 +32,15 @@ To start the tests:
  > sudo make
 ```
 
-Make compiles all programs in the tests / folder for C ++ 14 and C ++ 17 and
-executes each compilation 100 times, counting the failed and successful
-attempts. Make is prefixed with *sudo* because unless the user has **scheduling
-privileges** executing programs that use one of the real-time scheduling
-policies will fail (permission denied).
+The default Make target compiles all programs in the *tests/* folder for C++14
+and C++17 and executes each compilation 100 times, counting the failed and
+successful attempts. Make is prefixed with *sudo* because unless the user has
+**scheduling privileges** executing programs that use one of the real-time
+scheduling policies will fail (permission denied).
 
 If the PREEMPT_RT patches are installed all tests should complete 100%,
-otherwise the rate of successful tests should be over 95% because POSIX does not
-require a real-time scheduler. For example, here is the output on an Ubuntu VM
+otherwise the rate of successful tests should be over 95% (POSIX does not
+require a real-time scheduler). For example, here is the output on an Ubuntu VM
 without preempt patches:
 
 Example:
@@ -75,8 +77,13 @@ Example:
 ### multivm Libpreempt(all) *** 96.600% (1800 runs = 1739 good + 61 bad + 0 missing)
 ```
 
-Every test has the form of a C++ file and has been carefully written in a way
-that (1) it runs one specific scenario and (2) is human readable.
+The test categories are based on each another:
+
+```
+       std ==> task ===|
+                       |===> scheduling ==> process
+   pthread ==> task ===|
+```
 
 *tests/std_xxx.cpp*
 : C++ standard library. Currently tests exist for *std::thread* and other
@@ -93,18 +100,10 @@ that (1) it runs one specific scenario and (2) is human readable.
 *tests/process_xxx.cpp*
 : Processes with [real-time] task schedulers. Also memory management and IPC.
 
-As one can see categories are based on each another:
-
-```
-       std ==> task ===|
-                       |===> scheduling ==> process
-   pthread ==> task ===|
-```
-
 ## Real-time framework
 
-*Libpreempt* is a C++ library build the notion of **threads**, **tasks** and
-**schedulers**.
+*Libpreempt* contains a C++ library build around the concepts of **threads**,
+**tasks** and **schedulers**.
 
 Thread
 : Independent units of execution within a process. Threads are to time what
@@ -115,12 +114,13 @@ Task
   and real-time threads.
 
 Scheduler
-: A scheduler class allows tasks to run under a clearly defined algorithm.
+: A scheduler class allows tasks within a process to run under a clearly defined
+  algorithm.
 
 Unlike the C++ standard library this library is designed for POSIX systems.
 `preempt::thread` has the same interface as `std::thread` but with an optional
 priority and a scheduling policy. If 0 and SCHED_OTHER is used (the defaults)
-then it works like `std::thread`. 
+then it works like `std::thread`.
 
 Both classes, `std::thread` and `preempt::thread` spawn a system thread in the
 constructor and run in cooperation with other threads within a process.
