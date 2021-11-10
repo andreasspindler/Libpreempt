@@ -4,9 +4,6 @@
  * preempt::thread is like std::thread plus the ability to enable one of the
  * realtime scheduling policies on the running thread, as demonstrated in this
  * test.
- *
- * Use "ulimit -r" to see the maximum realtime priority the current user can
- * use. See also /etc/security/limits.conf
  */
 #include <preempt/process.h>
 #include <preempt/thread.h>

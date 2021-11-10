@@ -220,6 +220,7 @@ EOF
 
   ((RunningUnderVM)) && warn "running under VM"
   ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel '$(uname -s)'"
+  [[ $(ulimit -r) == '0' ]] && warn 'user has no rights to start realtime threads'
 
   {
     Summary=0 TotalRuns=0 TotalGood=0 TotalBad=0 TotalMissing=0

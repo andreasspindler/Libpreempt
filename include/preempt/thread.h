@@ -6,6 +6,7 @@
 
 #include <base/details/system.h>
 #include <base/string.h>
+#include <base/verify.h>
 
 #include <thread>
 #include <memory>
@@ -215,6 +216,12 @@ thread::swap(thread& other) noexcept {
 
 bool
 thread::try_scheduling(int new_policy, int new_priority) noexcept {
+  switch (new_policy) {
+  case SCHED_FIFO:
+  case SCHED_RR:
+    VERIFY(new_priority > 0);
+    break;
+  }
   sched_param sch;
   int policy;
   pthread_getschedparam(native_handle(), &policy, &sch); // get current policy and priority
