@@ -1,10 +1,12 @@
 /*
+ * std_05_sched_policy.cpp
+ *
  * preempt::thread is like std::thread plus the ability to enable one of the
  * realtime scheduling policies on the running thread, as demonstrated in this
  * test.
  *
  * Use "ulimit -r" to see the maximum realtime priority the current user can
- * use.
+ * use. See also /etc/security/limits.conf
  */
 #include <preempt/process.h>
 #include <preempt/thread.h>
@@ -29,6 +31,7 @@ int main(int argc, char *argv[])
   preempt::thread thr2 {SCHED_FIFO, 1, Task1}; // runs under SCHED_FIFO
   preempt::thread thr3 {SCHED_RR,   1, Task2}; // runs under SCHED_RR
 
+  // TODO: change policy of thr1
   thr1.join();
   thr2.join();
   thr3.join();

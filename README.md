@@ -117,13 +117,9 @@ Scheduler
 : A scheduler class allows tasks within a process to run under a clearly defined
   algorithm.
 
-Unlike the C++ standard library this library is designed for POSIX systems.
+Unlike the C++ standard library *Libpreempt* is designed for POSIX systems.
 `preempt::thread` has the same interface as `std::thread` but with an optional
-priority and a scheduling policy. If 0 and SCHED_OTHER is used (the defaults)
-then it works like `std::thread`.
-
-Both classes, `std::thread` and `preempt::thread` spawn a system thread in the
-constructor and run in cooperation with other threads within a process.
+priority and a scheduling policy.
 
 ## Unit test driver (Pudding)
 
@@ -131,17 +127,17 @@ Pudding is the driver for the unit tests and implemented in a single script. It
 compiles a matrix of executables for each single test, runs them and summarizes
 results.
 
-More specifically, this is how the `pudding.sh` script works. It assumes that
-each *.cpp*-file in *tests/* is a separate test. It then spans these tests over
-several language standards, optimization levels and CPU microarchitectures and
-in this way generates many executable files.
+More specifically, this is how the `pudding.sh` script works:
 
-The script can execute these files repeatedly while counting successful runs.
-Essentially this means all `assert()`s hold true, neither `std::abort()` nor
-`std::terminate()` was called and the process returns 0 (`EXIT_SUCCESS`).
+- each *.cpp*-file in *tests/* is a separate test
 
-As soon as something changes with the hardware, OS, compiler, libraries etc. the
-hard-won tests can be rebuild and trust can be regained again.
+- span these tests over several language standards, optimization levels and CPU
+  microarchitectures and in this way generates many executable files.
+
+- execute each repeatedly while counting successful runs.
+
+A run is successful if the process returns 0 (`EXIT_SUCCESS`). This means all
+`assert()`s hold true, neither `std::abort()` nor `std::terminate()` was called.
 
 Pudding works nicely on top of **Docker images** and **Yocto Linux Bitbake
 recipes**, with Docker or Yocto providing the system basis and Pudding the basis
@@ -159,6 +155,23 @@ Since it operates inside a computer `pudding.sh` expects that no process will
 fail *ever*. Either they all succeed or there are bugs.
 
 # EXAMPLES
+
+## Running the test script
+
+``` sh
+ $ alias pudding=./pudding.sh
+ $ pudding -h                 # command-line options help
+ $ pudding build              # compile all files under tests/
+ $ pudding build 10           # dto. plus run each executable 10 times
+ $ pudding -f std 10          # limit to category 'std'
+ $ pudding -f pthread 10
+ $ pudding -f task 10
+ $ pudding -f sched 10
+ $ pudding -f process 10
+ $ pudding -q 10              # quiet: no informational output
+ $ pudding -q -q 10           # dto. and no statistical output about runs
+ $ pudding 10 2>/dev/null     # get rid of warning and error messages
+```
 
 ## Executing tests
 
@@ -181,23 +194,6 @@ process_00.c++17.O3                     100 run(s)          0 bad        100 goo
 ### W530 Libpreempt(all) *** END 100 [Mon, 20 Sep 2021 21:05:30 +0200]
 ### Libpreempt(all) *** 100.000% (15000 runs = 15000 good + 0 bad + 0 missing)
 ### Libpreempt(all) *** OK
-```
-
-## Running the test script
-
-``` sh
- $ alias pudding=./pudding.sh
- $ pudding -h                 # command-line options help
- $ pudding build              # compile all files under tests/
- $ pudding build 10           # dto. plus run each executable 10 times
- $ pudding -f std 10          # limit to category 'std'
- $ pudding -f pthread 10
- $ pudding -f task 10
- $ pudding -f sched 10
- $ pudding -f process 10
- $ pudding -q 10              # quiet: no informational output
- $ pudding -q -q 10           # dto. and no statistical output about runs
- $ pudding 10 2>/dev/null     # get rid of warning and error messages
 ```
 
 ## Add a new test
@@ -295,65 +291,22 @@ cup of tea).
 
 # FAQ
 
-## Why can real-time tests fail?
-
-If the code is running under a RTOS and Linux RT-throttling is disabled, the
-only other thing known to mess with the real-time scheduling policies is the
-memory manager. To disable pagefaults all pages must be locked before letting
-`pthread_create()` create FIFO or RR threads:
-
-``` c++
-#include <preempt/process.h>
-
-int main(int argc, char *argv[])
-{
-  preempt::this_process::begin_real-time();
-  // can safely start real-time threads
-  preempt::this_process::end_real-time();
-  return 0
-}
-```
-
-Basically `begin_real-time()` locks all process memory so that the VMM can't
-interrupt the process.
-
-## Is a Linux real-time kernel required to use real-time scheduling?
-
-No. Real-Time scheduling is POSIX function available on all Linux kernels. A
-kernel built with the real-time patches is needed if:
-
-- You want to run software with very low latency settings that require real-time
-  performance that can only be achieved with an RT kernel.
-
-- Your hardware configuration triggers poor latency behaviour which might be
-  improved with an RT kernel.
-  
-## How to check if PREEMPT_RT patches are installed?
-
-``` sh
- $ uname -v
- #60~20.04.1-Ubuntu SMP PREEMPT Thu May 6 09:52:46 UTC 2021
-                         ^
-                         |
-                         |
-                         this word must be printed
-```
-
-## Does Yocto-Linux has a real-time-kernel?
-
-Yes.
-
 ## What is an RTOS?
 
 **The basis of an RTOS is a real-time scheduler for threads and processes**. A
 RT scheduler operates in O(1) time or, under Linux, as CFS (*Completely Fair
 Scheduler*). While an RTOS requires an RT scheduler it also needs predictable
-"real-time" behaviors in the other parts of the OS too.
+"real-time behaviors" in the other parts of the OS too.
 
-The specific description of "real-time" is that processes have minimum response
-time guarantees. **The system should behave as predictably as possible.** This
-means that it should always take up the same period of time, regardless of the
-data to be processed, and this period must be measurable.
+The specific description of "real-time" is that processes/threads have minimum
+response time guarantees. **The system should behave as predictably as
+possible.** This means that it should always take up the same period of time,
+regardless of the data to be processed, and this period must be measurable.
+
+In general, real-time processes and threads are in charge of critical tasks
+whose execution cannot be interrupted (usually involved in multimedia
+processing). Because real-time processes/threads prevent any non-real-time
+processes/threads from running, in general their life-time should be short.
 
 **In order to achieve predictability**, the tasks that a computer executes in
 parallel, must be distributed to the underlying CPU cores in such a way that no
@@ -366,7 +319,54 @@ tasks have a priority and a scheduling policy.
 It is usually sufficient if the system is **predictable for a specific,
 practical problem** (application) and not for all conceivable questions.
 
-## How does Preemptive Multitasking work for real-time systems?
+## Is a RTOS required to use real-time scheduling?
+
+No. Real-time scheduling is a POSIX function available on all Linux kernels. A
+kernel built with the real-time patches is needed if:
+
+- You want to run software with very low latency settings that require real-time
+  performance that can only be achieved with an RT kernel.
+
+- Your hardware configuration triggers poor latency behaviour which might be
+  improved with an RT kernel.
+
+## Why can real-time tests fail?
+
+If the code is running under a RTOS and Linux RT-throttling is disabled, the
+only other thing known to mess with the real-time scheduling policies is the
+memory manager. To disable page-faults all pages must be locked before calling
+`pthread_create()`:
+
+``` c++
+#include <preempt/process.h>
+
+int main(int argc, char *argv[])
+{
+  preempt::this_process::begin_real_time();
+  /*
+   * all memory locked - the VMM won't interrupt the process
+   */
+  preempt::this_process::end_real_time();
+  return 0
+}
+```
+  
+## How to check if PREEMPT_RT patches are installed?
+
+``` sh
+ $ uname -v
+ #60~20.04.1-Ubuntu SMP PREEMPT Thu May 6 09:52:46 UTC 2021
+                         ^
+                         |
+                         |
+                         indicator
+```
+
+## Does Yocto-Linux has a real-time-kernel?
+
+Yes.
+
+## How does preemptive multitasking work for real-time systems?
 
 Preemptive multitasking creates the illusion that multiple processes and threads
 run concurrently on a single processor, while they are actually only assigned a
@@ -384,7 +384,7 @@ calls `sched_yield()`.
 For this reason, RT throttling is activated under Linux: by default 5% of the
 CPU time is also assigned to non-RT threads per second.
 
-## How does Cooperative Multitasking work for real-time systems?
+## How does cooperative multitasking work for real-time systems?
 
 > Cooperative multitasking, also known as non-preemptive multitasking, is a
 > style of computer multitasking in which the operating system never initiates a
@@ -404,27 +404,19 @@ is implemented preemptively or cooperatively.
 
 ## Some details about POSIX real-time scheduling
 
-
 `SCHED_FIFO` is a simple scheduling algorithm without time slicing. `SCHED_RR`
 is a simple scheduling algorithm with time slice for processes/threads with the
 same priority. `SCHED_FIFO` and `SCHED_RR` processes/threads belong to the
 category of the real-time (RT) processes/threads.
-
-Real-Time processes/threads are in charge of critical tasks whose execution
-cannot be interrupted (usually involved in multimedia processing). Because
-real-time threads prevent any non-real-time threads from running, in general their
-life-time should be [very] short.
-
-## Some details about Pthreads
 
 - The thread **may or may not have started when `pthread_create()` returns** but
   `SCHED_FIFO` threads are always executed in the order of their creation.
 
 - On **multicore systems** the kernel will not run multiple threads on multiple
   cores simultaneously, which would violate the defined behavior. A thread
-  scheduled `SCHED_FIFO` or `SCHED_RR`, when selected for running, will continue to use the CPU
-  until either it is blocked by an I/O request, it is preempted by a higher
-  priority `SCHED_FIFO` or `SCHED_RR`, or it calls `sched_yield()`.
+  scheduled `SCHED_FIFO` or `SCHED_RR`, when selected for running, will continue
+  to use the CPU until either it is blocked by an I/O request, it is preempted
+  by a higher priority `SCHED_FIFO` or `SCHED_RR`, or it calls `sched_yield()`.
 
 - `SCHED_FIFO` can be used only with static priorities higher than 0, which
   means that when a `SCHED_FIFO` becomes runnable, it will always immediately

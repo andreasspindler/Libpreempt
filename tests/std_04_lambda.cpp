@@ -24,5 +24,3 @@ int main(int argc, char *argv[])
   VERIFY(local);
   return 0;
 }
-
-/* EOF */

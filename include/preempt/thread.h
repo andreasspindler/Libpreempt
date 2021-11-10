@@ -14,17 +14,17 @@
 
 namespace preempt {
 /**
- * @brief Like std::thread but allow POSIX scheduling policies and a priority
+ * @brief Like std::thread but allow POSIX scheduling policies
  *
- * std::thread and preempt::thread have the same interface. preempt::thread has
- * a constructor that accepts a priority and an additional method @ref
- * change_scheduling_policy.
+ * std::thread and preempt::thread have the same interface.
+ * preempt::thread has a constructor that accepts a priority and an
+ * additional method @ref change_scheduling_policy.
  *
  * Example:
  *
- *     preempt::thread thr;            // exists
- *     thr = preempt::thread(function) // runs normally
- *     thr = preempt::thread<SCHED_FIFO>(10, function) // runs with priority
+ *     preempt::thread thr;
+ *     thr = preempt::thread(function)                 // no priority
+ *     thr = preempt::thread(SCHED_FIFO, 10, function) // priority 10
  *
  * @see https://en.cppreference.com/w/cpp/thread/thread
  */
@@ -34,24 +34,32 @@ public:
   using native_handle_type = std::thread::native_handle_type;
   using id = std::thread::id;
 
-  /** Creates new thread object which does not represent a thread. */
+  /** The default constructor creates a new thread object which does
+      not represent a thread. A thread is default-constructed if
+      this->get_id() == thread::id().
+  */
   thread() noexcept;
 
-  /** Move constructor. Constructs the thread object to represent the thread of
-      execution that was represented by other. After this call other no longer
-      represents a thread of execution. */
+  /** Move constructor. Constructs the thread object to represent the
+      thread of execution that was represented by other. After this
+      call other no longer represents a thread of execution.
+  */
   thread(thread&& other) noexcept;
 
-  /** Construct new, normal thread object. Under POSIX this means a thread
-      running under the SCHED_OTHER scheduling policy and priority 0.  To set a new scheduling policy and priority @ref try_scheduling().
+  /** Construct new, normal thread object. Under POSIX this means a
+      thread running under the SCHED_OTHER scheduling policy and
+      priority 0. To set a new scheduling policy and priority @ref
+      try_scheduling().
   */
   template<class Function, class... Args>
   explicit thread(Function&& f, Args&&... args);
 
-  /** Start a realtime thread with a certain scheduling policy and priority.
-      Before the ctor returns the thread may not only begin execution, but also
-      can preempt any other threads with a lower priority (@ref
-      change_scheduling).
+  /** Start a realtime thread with a certain scheduling policy and
+      priority. Before the ctor returns the thread may not only begin
+      execution, but also can preempt any other threads with a lower
+      priority (@ref change_scheduling).
+
+      If setting the policy/priority fails the process is terminated.1
   */
   template<class Function, class... Args>
   explicit thread(int policy, int priority, Function&&, Args&&...);
@@ -59,90 +67,82 @@ public:
   /** Free the occupied system resources. */
   ~thread();
 
-  /** Move thread object. Assign the state of other to *this and sets other to a
-      default constructed state.
+  /** Move thread object. Assign the state of other to *this and sets
+      other to a default constructed state.
 
-      After this call, this->get_id() is equal to the value of other.get_id()
-      prior to the call, and other no longer represents a thread of execution.
+      After this call, this->get_id() is equal to the value of
+      other.get_id() prior to the call, and other no longer represents
+      a thread of execution.
   */
   thread& operator = (thread&& other) noexcept;
 
   /** Checks if this object identifies an active thread of execution.
-      A thread is generally not joinable if:
+      In general a thread is not joinable if:
        - it was default-constructed
        - it has been moved
        - detach() has been called
 
-      Specifically, returns false if get_id() == id. So a default constructed
-      thread is not joinable. In fact calling join() on a thread that is not
-      joinable may throw a runtime error.
-
-      A thread that has finished executing code, but has not yet been joined is
-      still considered an active thread of execution and is therefore joinable.
+      A thread that has finished executing code, but has not yet been
+      joined is still considered an active thread of execution and is
+      therefore joinable.
   */
-  bool
-  joinable() const noexcept;
+  bool joinable() const noexcept;
 
   /** Returns a value identifying the thread associated with *this. */
   id get_id() const noexcept;
 
   /** Returns the implementation defined underlying thread handle. */
-  native_handle_type
-  native_handle();
+  native_handle_type native_handle();
 
-  /** Blocks the current thread until the thread identified by *this finishes
-      its execution. The completion of the thread identified by *this
-      synchronizes with the corresponding successful return from join().
+  /** Blocks the current thread until the thread identified by *this
+      finishes its execution. The completion of the thread identified
+      by *this synchronizes with the corresponding successful return
+      from join().
 
-      No synchronization is performed on *this itself. Concurrently calling
-      join() on the same thread object from multiple threads constitutes a data
-      race that results in undefined behavior.
+      No synchronization is performed on *this itself. Concurrently
+      calling join() on the same thread object from multiple threads
+      constitutes a data race that results in undefined behavior.
 
       After this function returns joinable() is false.
 
-      Calling join() in a default-constructed thread (joinable() == false) is
-      undefined behavior and may also throw a runtime error.
+      Calling join() in a default-constructed thread (joinable() ==
+      false) is undefined behavior and may also throw a runtime error.
   */
-  void
-  join();
+  void join();
 
-  /** Separates the thread of execution from the thread object, allowing
-      execution to continue independently. Any allocated resources will be freed
-      once the thread exits. After calling detach *this no longer owns any
-      thread.
+  /** Separates the thread of execution from the thread object,
+      allowing execution to continue independently. Any allocated
+      resources will be freed once the thread exits. After calling
+      detach *this no longer owns any thread.
   */
-  void
-  detach();
+  void detach();
 
   /** Exchanges the underlying handles of two thread objects. */
-  void
-  swap(thread& other) noexcept;
+  void swap(thread& other) noexcept;
 
-  /** Returns the number of concurrent threads supported by the implementation.
-      The value should be considered only a hint. Same value as
-      std::thread::hardware_concurrency().
+  /** Returns the number of concurrent threads supported by the
+      underlying implementation. The value should be considered only a
+      hint.
   */
-  static unsigned int
-  hardware_concurrency();
+  static unsigned int hardware_concurrency();
 
-  /** Modify scheduling policy and priority of the already running thread.
-      Return true if this is successful, false otherwise (failure). Probably
-      fails if the thread has already terminated. Under Linux fails if the user
-      is not a member of the realtime group (try `std::strerror(errno)`).
+  /** Modify scheduling policy and priority of the already running
+      thread. Return true if this is successful, false otherwise
+      (failure). Probably fails if the thread has already terminated.
+      Under Linux fails if the user is not a member of the realtime
+      group (try `std::strerror(errno)`).
 
-      Note that this implementation depends on @ref native_handle() and POSIX
-      threads.
+      If this function returns false last_error() will provide a
+      description.
   */
-  bool
-  try_scheduling(int policy, int priority) noexcept;
+  bool try_scheduling(int policy, int priority) noexcept;
 
-  /** Like try_scheduling() but call std::terminate() if it fails. To test if a
-      realtime scheduler is available use:
+  /** Like try_scheduling() but call std::terminate() if it fails. To
+      test if a realtime scheduler is available use eiter:
 
          VERIFY(base::have_realtime_kernel())
   */
-  void
-  change_scheduling(int policy, int priority);
+  void change_scheduling(int policy, int priority) noexcept;
 
   std::string last_error() const noexcept { return error_; }
 
@@ -164,7 +164,9 @@ thread::thread(Function&& f, Args&&... args)
 
 template<class Function, class... Args>
 thread::thread(int policy, int priority, Function&& f, Args&&... args)
-  : thread{std::forward<Function>(f), std::forward<Args>(args)...} { change_scheduling(policy, priority); }
+  : thread{std::forward<Function>(f), std::forward<Args>(args)...} {
+  change_scheduling(policy, priority); // may not return
+}
 
 inline
 thread::~thread() {}
@@ -211,7 +213,6 @@ thread::swap(thread& other) noexcept {
   return impl_.swap(other.impl_);
 }
 
-
 bool
 thread::try_scheduling(int new_policy, int new_priority) noexcept {
   sched_param sch;
@@ -226,7 +227,7 @@ thread::try_scheduling(int new_policy, int new_priority) noexcept {
 }
 
 void
-thread::change_scheduling(int policy, int priority) {
+thread::change_scheduling(int policy, int priority) noexcept {
   if (false == try_scheduling(policy, priority)) {
     std::terminate();
   }
