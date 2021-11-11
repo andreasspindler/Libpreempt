@@ -216,6 +216,8 @@ thread::swap(thread& other) noexcept {
 
 bool
 thread::try_scheduling(int new_policy, int new_priority) noexcept {
+  if (false == joinable())
+    return true;
   switch (new_policy) {
   case SCHED_FIFO:
   case SCHED_RR:
@@ -227,8 +229,16 @@ thread::try_scheduling(int new_policy, int new_priority) noexcept {
   pthread_getschedparam(native_handle(), &policy, &sch); // get current policy and priority
   sch.sched_priority = new_priority;
   if (int errnum = pthread_setschedparam(native_handle(), new_policy, &sch)) {
-    error_ = base::sprintf("FAILED: pthread_setschedparam(): '%s'", std::strerror(errnum));
-    return false;
+    switch (errnum) {
+    case ESRCH:
+      /* The thread has already been terminated ("No such process"). */
+      return true;
+    case EINVAL:
+    case EPERM:
+    default:
+      error_ = base::sprintf("FAILED: pthread_setschedparam(): '%s'", std::strerror(errnum));
+      return false;
+    }
   }
   return true;
 }

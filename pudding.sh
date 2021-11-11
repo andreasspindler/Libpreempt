@@ -111,10 +111,16 @@ EOF
 
     find_tests() { find ${1:-$TestDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
     readcommit() { git -C ${1:-.} rev-parse --short ${2:-HEAD} || echo ''; }
-    cout() { echo "### $(hostname) $TestTarget(${TestFlavor}) ***" "$@"; }
+    ANSI_GRN="\033[1;92m"
+    ANSI_DGR="\033[1;32m"
+    ANSI_RED="\033[1;91m"
+    ANSI_DRD="\033[1;31m"
+    ANSI_OFF="\033[0m"
+    cout() { echo -e "### $(hostname) $TestTarget(${TestFlavor}) ***" "$@"; }
     cerr() { cout "$@"; } >&2
     info() { ((optquiet==0)) && cout "$@"; }
-    warn() { cerr "WARNING:" "$@"; }
+    warn() { cerr "${ANSI_DGR}WARNING:${ANSI_GRN}" "$@" "$ANSI_OFF"; }
+    error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
     die() { cerr "ERROR:" "$@"; exit 1; }
     {
       missing=()
@@ -188,7 +194,7 @@ EOF
   #info "creating: '$TestMarchDir/$TestMakefile'"
   {
     mkdir -p $TestMarchDir
-    info "writing '$TestMarchDir/$TestMakefile'"
+    #info "writing '$TestMarchDir/$TestMakefile'"
     cat >$TestMarchDir/$TestMakefile <<EOF
 # -*- mode:makefile; eval:(auto-revert-mode); -*-
 #
@@ -217,10 +223,27 @@ EOF
   #
   grep -q "^flags.*hypervisor" /proc/cpuinfo && RunningUnderVM=1 || RunningUnderVM=0
   { uname -v | grep -w 'PREEMPT' >/dev/null; } && RunningUnderPREEMPT=1 || RunningUnderPREEMPT=0
+  UserMaximumRTPriority=$(ulimit -r)
+  RunningAsRoot=$((UID == 0))
+
+  RunningUnderLinux=0
+  case $(uname -s) in
+    Linux*) RunningUnderLinux=1;;
+  esac
 
   ((RunningUnderVM)) && warn "running under VM"
-  ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel '$(uname -s)'"
-  [[ $(ulimit -r) == '0' ]] && warn 'user has no rights to start realtime threads'
+  ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel '$(uname -s)' (some tests will fail!)"
+  if ((RunningAsRoot)); then
+    :
+  elif ((UserMaximumRTPriority==0)); then
+    error "user '$USER' cannot start real-time threads (many tests will fail!)"
+  elif ((UserMaximumRTPriority<32)); then
+    error "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority (many tests will fail)"
+  elif ((RunningUnderLinux)); then
+    if ((UserMaximumRTPriority<99)); then
+      warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority (Linux allows up to 99)"
+    fi
+  fi
 
   {
     Summary=0 TotalRuns=0 TotalGood=0 TotalBad=0 TotalMissing=0

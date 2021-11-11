@@ -1,5 +1,5 @@
 /*
- * std_05_sched_policy.cpp
+ * Test class preempt::thread
  *
  * preempt::thread is like std::thread plus the ability to enable one of the
  * realtime scheduling policies on the running thread, as demonstrated in this

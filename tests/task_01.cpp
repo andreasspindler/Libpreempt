@@ -1,8 +1,4 @@
 /*
- * By definition a task is an object containing one ore more worker threads.
- *
- * In this test we define two task classes.
- *
  * MonoTask: class with std::thread attribute
  *
  * PolyTask: class with std::vector<std::thread> attribute
@@ -11,102 +7,140 @@
 #include <thread>
 #include <string>
 
+#include <preempt/thread.h>
 #include <base/verify.h>
 
-using namespace std;
-
 /**
- * Distribute work to a single thread.
+ * Distributes work to a single thread.
  */
+template <typename Thread>
 class MonoTask {
 protected:
-  std::thread thread_;
+  Thread thread_;
 public:
   /** Join, then start a new member thread. */
   template<class Function, class... Args>
-  void spawn(Function&&, Args&&...);
+  Thread& spawn(Function&&, Args&&...);
 
-  /** Join member thread. */
+  /** Join the member thread. */
   void join();
 };
 
 /**
- * Distribute work to multiple threads.
+ * Distributes work to multiple threads.
  */
+template <typename Thread>
 class PolyTask {
 protected:
-  std::vector<std::thread> threads_;
+  std::vector<Thread> threads_;
 public:
   /** Push a new member thread. */
   template<class Function, class... Args>
-  void spawn(Function&&, Args&&...);
+  Thread& spawn(Function&&, Args&&...);
 
   /** Join all member threads. */
   void join();
 };
 
 /***********************************************************************
- * main function
+ * test code
  */
-int main(int argc, char *argv[])
+class Run {
+public:
+  void eins(int n) const { VERIFY(n == 1); }
+  void zwei(int n) const { VERIFY(n == 2); }
+  void drei(int const& n) const { VERIFY(n == 3); }
+} t;
+
+template <typename Thread>
+void test_no_priority()
 {
-  class Test {
-  public:
-    void eins(int n) const { VERIFY(n == 1); }
-    void zwei(int n) const { VERIFY(n == 2); }
-    void drei(int const& n) const { VERIFY(n == 3); }
-  } t;
+  int const x = 3;
 
-  int x = 3;
-
-  MonoTask mono;
-  PolyTask poly;
+  MonoTask<Thread> mono;
+  PolyTask<Thread> poly;
 
   for (int i = 0; i < 10; ++i) {
-    mono.spawn(&Test::eins, &t, 1);
-    mono.spawn(&Test::zwei, &t, 2);
-    mono.spawn(&Test::drei, &t, std::ref(x));
+    mono.spawn(&Run::eins, &t, 1);
+    mono.spawn(&Run::zwei, &t, 2);
+    mono.spawn(&Run::drei, &t, std::ref(x));
     for (int i = 0; i < 3; ++i) {
-      poly.spawn(&Test::eins, &t, 1);
-      poly.spawn(&Test::zwei, &t, 2);
-      poly.spawn(&Test::drei, &t, std::ref(x));
+      poly.spawn(&Run::eins, &t, 1);
+      poly.spawn(&Run::zwei, &t, 2);
+      poly.spawn(&Run::drei, &t, std::ref(x));
     }
   }
   mono.join();
   poly.join();
+}
+
+void test_priority(int policy, int priority)
+{
+  int const x = 3;
+
+  MonoTask<preempt::thread> mono;
+  PolyTask<preempt::thread> poly;
+
+  for (int i = 0; i < 10; ++i) {
+    mono.spawn(&Run::eins, &t, 1).change_scheduling(policy, priority);
+    mono.spawn(&Run::zwei, &t, 2).change_scheduling(policy, priority);
+    mono.spawn(&Run::drei, &t, std::ref(x)).change_scheduling(policy, priority);
+    for (int i = 0; i < 3; ++i) {
+      poly.spawn(&Run::eins, &t, 1).change_scheduling(policy, priority);
+      poly.spawn(&Run::zwei, &t, 2).change_scheduling(policy, priority);
+      poly.spawn(&Run::drei, &t, std::ref(x)).change_scheduling(policy, priority);
+    }
+  }
+  mono.join();
+  poly.join();
+}
+
+/***********************************************************************
+ * main function
+ */
+int main(int argc, char *argv[])
+{
+  test_no_priority<std::thread>();
+  test_no_priority<preempt::thread>();
+  test_priority(SCHED_FIFO, 1);
+
   return EXIT_SUCCESS;
 }
 
 /***********************************************************************
  * implementation
  */
-template<class Function, class... Args>
-void
-MonoTask::spawn(Function&& f, Args&&... args) {
+template <class Thread>
+template <class Function, class... Args>
+Thread&
+MonoTask<Thread>::spawn(Function&& f, Args&&... args) {
   join();
-  thread_ = std::thread
+  thread_ = Thread
     {std::forward<Function>(f), std::forward<Args>(args)...};
+  return thread_;
 }
 
+template <class Thread>
 void
-MonoTask::join() {
+MonoTask<Thread>::join() {
   if (thread_.joinable()) {
     thread_.join();
   }
 }
 
+template <class Thread>
 template<class Function, class... Args>
-void
-PolyTask::spawn(Function&& f, Args&&... args) {
+Thread&
+PolyTask<Thread>::spawn(Function&& f, Args&&... args) {
   threads_.emplace_back
-    (std::thread {std::forward<Function>(f), std::forward<Args>(args)...});
+    (Thread {std::forward<Function>(f), std::forward<Args>(args)...});
+  return threads_.back();
 }
 
+template <class Thread>
 void
-PolyTask::join() {
+PolyTask<Thread>::join() {
   for (auto& t : threads_) {
     t.join();
   }
 }
-
-/* EOF */

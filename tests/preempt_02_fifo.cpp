@@ -1,5 +1,5 @@
 /*
- * SCHED_FIFO test -- equal priorities
+ * SCHED_FIFO threads with equal priorities
  *
  * Runs threads under SCHED_FIFO realtime policy with same priority that
  * decrement an unguarded global integer. Each thread expects a certain value

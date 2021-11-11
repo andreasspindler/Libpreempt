@@ -52,7 +52,7 @@ kernel built with the real-time patches is needed if:
                          ^
                          |
                          |
-                         indicator
+                         indicates RTOS
 ```
 
 ## Does Yocto-Linux has a real-time-kernel?

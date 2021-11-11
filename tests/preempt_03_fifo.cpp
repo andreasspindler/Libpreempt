@@ -1,5 +1,5 @@
 /*
- * SCHED_FIFO test -- different priorities
+ * SCHED_FIFO threads with different priorities
  *
  * Runs threads under SCHED_FIFO realtime policy with different priorities. Each
  * threads decrement an unguarded global integer. Before doing this it expects a
