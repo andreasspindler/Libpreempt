@@ -1,5 +1,5 @@
 /*
- * Test class preempt::thread
+ * Basic tests for class preempt::thread
  *
  * preempt::thread is like std::thread plus the ability to enable one of the
  * realtime scheduling policies on the running thread, as demonstrated in this
@@ -9,7 +9,7 @@
 #include <preempt/thread.h>
 #include <string>
 
-#include <base/verify.h>
+#include <base/debug.h>
 
 #include <iostream>
 
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   preempt::thread thr2 {SCHED_FIFO, 1, Task1}; // runs under SCHED_FIFO
   preempt::thread thr3 {SCHED_RR,   1, Task2}; // runs under SCHED_RR
 
-  // TODO: change policy of thr1
+  // TBD: pre::thread::try_schedulung
   thr1.join();
   thr2.join();
   thr3.join();

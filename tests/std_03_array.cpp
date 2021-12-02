@@ -7,65 +7,52 @@
 #include <thread>
 #include <string>
 #include <array>
-
 #include <exception>
 #include <iostream>
 
-#include <base/verify.h>
-
-using namespace std;
+#include <base/debug.h>
 
 class Task
 {
 public:
-  void operator()() const
-    {
-    }
+  void operator()() const { }
 
-  void operator()(std::string arg) const
-    {
-      VERIFY(arg == "example");
-    }
+  void operator()(std::string arg) const { VERIFY(arg == "example"); }
 
-  void operator()(int n) const
-    {
-      VERIFY(n == 42);
-    }
+  void operator()(int n) const { VERIFY(n == 42); }
 } task;
 
 int main(int argc, char *argv[])
 {
-  using namespace std;
-
   try {
     /*
      * std::thread[]
      */
-    thread tha1[] {               // thread array
-      thread {task},              // Task::operator()
-      thread {task, std::string("example")}, // Task::operator(string)
-      thread {task, "example"},              // Task::operator(string)
-      thread {task, 42},                     // Task::operator(int)
+    std::thread tha1[] {                          // thread array
+      std::thread {task},                         // Task::operator()
+      std::thread {task, std::string("example")}, // Task::operator(string)
+      std::thread {task, "example"},              // Task::operator(string)
+      std::thread {task, 42},                     // Task::operator(int)
 #if 1
-      /* "C++’s most vexing parse." If you pass a temporary rather than a named
-         variable, then the syntax can be the same as that of a function
-         declaration, in which case the compiler interprets it as such, rather
-         than an object definition. */
-      thread {Task(), 42}
+      /* "C++’s most vexing parse." If you pass a temporary rather
+         than a named variable, then the syntax can be the same as
+         that of a function declaration, in which case the compiler
+         interprets it as such, rather than an object definition. */
+      std::thread {Task(), 42}
 #endif
     };
 
     /*
      * std::array<std::thread, SIZE>
      */
-    array<thread, 10> tha2;
+    std::array<std::thread, 10> tha2;
     for (auto& th : tha2) {
       //i = thread(task, "work");
       VERIFY(!th.joinable());
     }
 
     for (auto& th : tha2) {
-      th = thread(task, "example");
+      th = std::thread(task, "example");
       VERIFY(th.joinable());
     }
 

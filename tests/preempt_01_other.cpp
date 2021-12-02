@@ -5,11 +5,13 @@
  * Runs threads under SCHED_OTHER default policy (non-realtime, unprioritized).
  */
 #include <preempt/posix_thread.h>
-#include <base/verify.h>
+#include <base/debug.h>
 
 #include <iostream>
 
 #define X "Om Namaha Shivaya"
+
+namespace pre = preempt;
 
 void* thread_function1(void* arg)
 {
@@ -20,12 +22,10 @@ void* thread_function1(void* arg)
 
 int main(int argc, char *argv[])
 {
-  using namespace preempt;
-
   char argument[] = X;
 
   /* thread_function1 */
-  auto context = posix_thread(thread_function1, argument);
+  auto context = pre::posix_thread(thread_function1, argument);
   if (context) {
     context.join();
     if (context)

@@ -22,7 +22,7 @@ The C ++ framework was not developed on a theoretical basis but on the basis of
 concrete, practical problems. These can be found in the form of individual files
 in the *tests/* subdirectory.
 
-These tests can be started very easily by simply cloning the repository and
+All tests can be started very easily by simply cloning the repository and
 calling `make`.
 
 Example:
@@ -31,21 +31,39 @@ Example:
  > git clone https://github.com/andreasspindler/Libpreempt
  > cd Libpreempt
  > sudo make
+[sudo] password for jiva: 
 ./pudding.sh -D build 100
 ### multivm Libpreempt(all) *** WARNING: running under VM 
 ### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 'Linux' (some tests will fail!) 
 make[1]: Entering directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-all'
-make[1]: Nothing to be done for 'build'.
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_02_fifo.c++17.debug ../../tests/preempt_02_fifo.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_03_fifo.c++17.debug ../../tests/preempt_03_fifo.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_02_fifo.c++14.debug ../../tests/preempt_02_fifo.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o task_01_monopoly.c++14.debug ../../tests/task_01_monopoly.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_01_thread.c++14.debug ../../tests/std_01_thread.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_02_nonstatic.c++17.debug ../../tests/std_02_nonstatic.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o task_01_monopoly.c++17.debug ../../tests/task_01_monopoly.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_03_array.c++14.debug ../../tests/std_03_array.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_04_lambda.c++14.debug ../../tests/std_04_lambda.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_04_thread.c++17.debug ../../tests/preempt_04_thread.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_01_thread.c++17.debug ../../tests/std_01_thread.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_01_other.c++14.debug ../../tests/preempt_01_other.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_01_other.c++17.debug ../../tests/preempt_01_other.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_03_array.c++17.debug ../../tests/std_03_array.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_03_fifo.c++14.debug ../../tests/preempt_03_fifo.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_04_lambda.c++17.debug ../../tests/std_04_lambda.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_04_thread.c++14.debug ../../tests/preempt_04_thread.cpp ../../src/base.cpp ../../src/process.cpp
+g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_02_nonstatic.c++14.debug ../../tests/std_02_nonstatic.cpp ../../src/base.cpp ../../src/process.cpp
 make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-all'
-### multivm Libpreempt(all) *** executing command '100' [Thu, 11 Nov 2021 17:50:05 +0100]
+### multivm Libpreempt(all) *** executing command '100' [Thu, 02 Dec 2021 12:29:52 +0100]
 ### multivm Libpreempt(all) *** c++14 c++17 debug
 ### multivm Libpreempt(all) *** 9 tests => 18 target(s) => 1800 total run(s)
 #   1/  18: preempt_01_other.c++14.debug                    100 run(s)          0 bad        100 good
 #   2/  18: preempt_01_other.c++17.debug                    100 run(s)          0 bad        100 good
-#   3/  18: preempt_02_fifo.c++14.debug                     100 run(s)          1 bad         99 good
-#   4/  18: preempt_02_fifo.c++17.debug                     100 run(s)          0 bad        100 good
-#   5/  18: preempt_03_fifo.c++14.debug                     100 run(s)         21 bad         79 good
-#   6/  18: preempt_03_fifo.c++17.debug                     100 run(s)         30 bad         70 good
+#   3/  18: preempt_02_fifo.c++14.debug                     100 run(s)          0 bad        100 good
+#   4/  18: preempt_02_fifo.c++17.debug                     100 run(s)          1 bad         99 good
+#   5/  18: preempt_03_fifo.c++14.debug                     100 run(s)         10 bad         90 good
+#   6/  18: preempt_03_fifo.c++17.debug                     100 run(s)         12 bad         88 good
 #   7/  18: preempt_04_thread.c++14.debug                   100 run(s)          0 bad        100 good
 #   8/  18: preempt_04_thread.c++17.debug                   100 run(s)          0 bad        100 good
 #   9/  18: std_01_thread.c++14.debug                       100 run(s)          0 bad        100 good
@@ -56,15 +74,22 @@ make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-al
 #  14/  18: std_03_array.c++17.debug                        100 run(s)          0 bad        100 good
 #  15/  18: std_04_lambda.c++14.debug                       100 run(s)          0 bad        100 good
 #  16/  18: std_04_lambda.c++17.debug                       100 run(s)          0 bad        100 good
-#  17/  18: task_01.c++14.debug                             100 run(s)          0 bad        100 good
-#  18/  18: task_01.c++17.debug                             100 run(s)          0 bad        100 good
-### multivm Libpreempt(all) *** 97.100% (1800 runs = 1748 good + 52 bad + 0 missing)
+#  17/  18: task_01_monopoly.c++14.debug                    100 run(s)          0 bad        100 good
+#  18/  18: task_01_monopoly.c++17.debug                    100 run(s)          0 bad        100 good
+### multivm Libpreempt(all) *** 98.700% (1800 runs = 1777 good + 23 bad + 0 missing)
 make: *** [Makefile:8: all] Error 1
 ```
 
-Make is prefixed with *sudo* because unless the user has **scheduling
-privileges** executing programs that use one of the real-time scheduling
-policies will fail (permission denied).
+Don't be impressed. Make simply calls the test driver `pudding.sh` here. First
+the script compiles a matrix of executables for each single test. Each test is
+stretched over different C++ standards, optimization levels and (optionally) CPU
+micro-architecures. In this way it compiles many executable files for each
+single C++ file. Second, the script runs all executables repeatedly and
+summarizes results only based on exit codes.
+
+A run is successful if the process returns code 0 (`EXIT_SUCCESS`). So no test
+framework is required on the C++ side. A test is successful when all `assert()`
+calls return and neither `std::abort()` nor `std::terminate()` was called.
 
 We have five test categories based on each other:
 
@@ -87,17 +112,15 @@ task
 process
 : Sample applications for tasks.
 
-The test driver is the script *pudding.sh*. It compiles a matrix of executables
-for each single test, which is stretched over different C++ standards,
-optimization levels. In this way it compiles many executable files for each
-single C++ file. Then the script runs all executables repeatedly and summarizes
-results.
+Make is prefixed with *sudo* because unless the user has **scheduling
+privileges** executing programs that use one of the real-time scheduling
+policies will fail (permission denied).
 
-No test framework is required on the C++ side. A run is successful if the
-process returns code 0 (`EXIT_SUCCESS`). This means all assertions hold true and
-neither `std::abort()` nor `std::terminate()` was called.
+## Installing
 
-<!-- ## Installing -->
+``` sh
+ > git clone https://github.com/andreasspindler/Libpreempt
+```
 
 ## Details
 

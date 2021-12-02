@@ -6,7 +6,7 @@
 
 #include <base/details/system.h>
 #include <base/string.h>
-#include <base/verify.h>
+#include <base/debug.h>
 
 #include <memory>
 #include <cstring>              // std::strerror
@@ -14,9 +14,9 @@
 
 namespace preempt {
 /**
- * Lightweight, trivially copyable class that serves as a unique
- * identifier of schedulabe objects. Like std::thread is can be used
- * as key in associative containers, both ordered and unordered.
+ * Lightweight, trivially copyable class that serves as a unique identifier of
+ * schedulabe objects. Like std::thread is can be used as key in associative
+ * containers, both ordered and unordered.
  *
  * Instances of this class may also hold the special distinct value that does
  * not represent any thread.

@@ -24,7 +24,20 @@ namespace preempt {
     end_realtime() {
       unlock_all_pages();
     }
+#if 0
+    void
+    terminate_unless_rtprio(int required_priority) {
+      min_fifo = sched_get_priority_min(SCHED_FIFO);
+      max_fifo = sched_get_priority_max(SCHED_FIFO);
 
+      if (getrlimit(RLIMIT_RTPRIO, &rl) != 0) {
+        error_ = base::sprintf("FAILED: pthread_setschedparam(): '%s'", std::strerror(errnum));
+        e = errno;
+        printf("Failed to getrlimit(): %s.\n", strerror(e));
+        std::terminate();
+      }
+    }
+#endif
     bool
     unlimit_lock_pages() {
 #ifdef RUNNING_UNDER_LINUX

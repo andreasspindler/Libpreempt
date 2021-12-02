@@ -5,14 +5,10 @@
 #include <thread>
 #include <string>
 
-#include <base/verify.h>
-
-using namespace std;
+#include <base/debug.h>
 
 int main(int argc, char *argv[])
 {
-  using namespace std;
-
   bool local = false;
   auto fn = [&]() {
     local = true;

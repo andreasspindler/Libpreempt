@@ -8,9 +8,7 @@
 #include <memory>
 #include <chrono>
 
-#include <base/verify.h>
-
-using namespace std;
+#include <base/debug.h>
 
 int main(int argc, char *argv[])
 {
@@ -28,18 +26,18 @@ int main(int argc, char *argv[])
     };
     {                             // Task::run via object on stack
       Task task;
-      thread th {&Task::run, &task, X};
+      std::thread th {&Task::run, &task, X};
       th.join();
     }
     {                             // Task::run via raw pointer
       Task *task = new Task;
-      thread th {&Task::run, task, X};
+      std::thread th {&Task::run, task, X};
       th.join();
       delete task;
     }
     {                             // Task::run via smart pointer
-      auto task = make_shared<Task>();
-      thread th {&Task::run, task, X};
+      auto task = std::make_shared<Task>();
+      std::thread th {&Task::run, task, X};
       th.join();
     }
   }
@@ -64,11 +62,11 @@ int main(int argc, char *argv[])
       }
 
       void foo() const {
-        this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
 
       void bar() const {
-        this_thread::sleep_for(std::chrono::milliseconds(2));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
       }
 
     private:

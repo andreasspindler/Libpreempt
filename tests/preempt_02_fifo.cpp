@@ -14,9 +14,9 @@
 #include <preempt/process.h>
 #include <preempt/posix_thread.h>
 
-#include <base/verify.h>
+#include <base/debug.h>
 
-using namespace preempt;
+namespace pre = preempt;
 
 int global_value;
 
@@ -28,22 +28,22 @@ int main(int argc, char *argv[])
 
   int expected[] { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
-  this_process::begin_realtime();
+  pre::this_process::begin_realtime();
 
   /* Replace SCHED_FIFO by SCHED_RR and this test can go wrong with a
      probability of approx. 0.1%. The only reason why this probability is not
      higher is the shortness of decrement(). */
-  posix_thread handle[10] {
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[0]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[1]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[2]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[3]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[4]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[5]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[6]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[7]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[8]),
-    posix_thread(SCHED_FIFO, 1, decrement, &expected[9]),
+  pre::posix_thread handle[10] {
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[0]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[1]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[2]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[3]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[4]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[5]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[6]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[7]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[8]),
+    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[9]),
   };
 
   for (int i = 0; i < 10; ++i) {
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  this_process::end_realtime();
+  pre::this_process::end_realtime();
 
   if (global_value == -1) {
     return EXIT_SUCCESS;
