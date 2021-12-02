@@ -19,13 +19,9 @@ in
   sched)
     Tests=($(find_tests $TestDir 'sched_*.cpp'))
     ;;
-  develop|parinama)
-    #
-    # use this when developing/debugging a single test
-    #
+  parinama)
     # parinama is a Sanskrit word and means development, change
-    #
-    Tests=($(find_tests $TestDir 'task_01*.cpp'))
+    Tests=($(find_tests $TestDir 'task_03*.cpp'))
     ;;
 esac
 

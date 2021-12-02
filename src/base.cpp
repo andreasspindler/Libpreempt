@@ -1,10 +1,4 @@
-#include <thread>
-#include <mutex>
-#include <map>
-#include <cassert>
-
-#include <base/details/system.h>
-#include <base/debug.h>
+#include <preempt/all.h>
 
 namespace base {
 std::mutex g_logging_mutex;

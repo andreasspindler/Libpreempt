@@ -1,10 +1,10 @@
 /* -*-coding:raw-text-unix-*-
  *
- * preempt/posix_thread.h -- lightweight POSIX thread class
+ * base/pthread.h -- lightweight POSIX thread class
  */
 #pragma once
 
-#include <base/details/system.h>
+#include <base/posix.h>
 #include <base/string.h>
 #include <base/debug.h>
 
@@ -12,7 +12,7 @@
 #include <cstring>              // std::strerror
 #include <iostream>
 
-namespace preempt {
+namespace base {
 /**
  * Lightweight, trivially copyable class that serves as a unique identifier of
  * schedulabe objects. Like std::thread is can be used as key in associative
@@ -21,14 +21,14 @@ namespace preempt {
  * Instances of this class may also hold the special distinct value that does
  * not represent any thread.
  */
-struct posix_thread {
+struct pthread {
   using handle = pthread_t;
 
   typedef void*(*function)(void*);
 
-  posix_thread();
-  posix_thread(function funp, void* argp = nullptr);
-  posix_thread(int policy, int priority, function funp, void* argp = nullptr);
+  pthread();
+  pthread(function funp, void* argp = nullptr);
+  pthread(int policy, int priority, function funp, void* argp = nullptr);
 
   void join();
 
@@ -42,14 +42,14 @@ struct posix_thread {
 };
 
 inline
-posix_thread::posix_thread() { }
+pthread::pthread() { }
 
 inline
-posix_thread::posix_thread(function funp, void* argp)
-  : posix_thread {SCHED_OTHER, 0, funp, argp} { }
+pthread::pthread(function funp, void* argp)
+  : pthread {SCHED_OTHER, 0, funp, argp} { }
 
 inline
-posix_thread::posix_thread(int policy, int priority, function funp, void* argp)
+pthread::pthread(int policy, int priority, function funp, void* argp)
 {
   if (funp) {
     /* initialize structures */
@@ -87,7 +87,7 @@ posix_thread::posix_thread(int policy, int priority, function funp, void* argp)
 
     /* create thread */
     if (int errnum = pthread_create(&id, attrp.get(), funp, argp)) {
-      last_error = base::sprintf("posix_thread() ctor failed: '%s'", std::strerror(errnum));
+      last_error = base::sprintf("pthread() ctor failed: '%s'", std::strerror(errnum));
       return;
     }
     joinable = true;
@@ -96,9 +96,9 @@ posix_thread::posix_thread(int policy, int priority, function funp, void* argp)
 
 inline
 void
-posix_thread::join() {
+pthread::join() {
   if (int errnum = pthread_join(id, 0)) {
-    last_error = base::sprintf("posix_thread::join() failed: '%s'", std::strerror(errnum));
+    last_error = base::sprintf("pthread::join() failed: '%s'", std::strerror(errnum));
     joinable = false;
   } else {
     joinable = true;

@@ -10,10 +10,10 @@
 
 #include <base/debug.h>
 
-int main(int argc, char *argv[])
-{
 #define X "Om Sharavanabhavaya Namaha"
 
+int main(int argc, char *argv[])
+{
   /*
    * Class method as thread.
    */

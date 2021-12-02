@@ -1,20 +1,13 @@
 /* -*- coding: raw-text-unix; -*-
  *
- * SCHED_OTHER test
- *
- * Runs threads under SCHED_OTHER default policy (non-realtime, unprioritized).
+ * Basic POSIX thread. Runs threads under SCHED_OTHER default policy
+ * (non-realtime, unprioritized).
  */
-#include <preempt/posix_thread.h>
-#include <base/debug.h>
+#include <base/all.h>
 
-#include <iostream>
+#define X "Om Gam Ganapataye Namaha"
 
-#define X "Om Namaha Shivaya"
-
-namespace pre = preempt;
-
-void* thread_function1(void* arg)
-{
+void* thread_function(void* arg) {
   pthread_t id = pthread_self();
   VERIFY(std::string(static_cast<char const*>(arg)) == X);
   return nullptr;
@@ -25,7 +18,7 @@ int main(int argc, char *argv[])
   char argument[] = X;
 
   /* thread_function1 */
-  auto context = pre::posix_thread(thread_function1, argument);
+  auto context = base::pthread(thread_function, argument);
   if (context) {
     context.join();
     if (context)

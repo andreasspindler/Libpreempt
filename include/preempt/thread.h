@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include <base/details/system.h>
+#include <base/posix.h>
 #include <base/string.h>
 
 #include <thread>
@@ -229,6 +229,7 @@ thread::swap(thread& other) noexcept {
   return impl_.swap(other.impl_);
 }
 
+inline
 bool
 thread::try_scheduling(int new_policy, int new_priority) noexcept {
   if (false == joinable())
@@ -259,6 +260,7 @@ thread::try_scheduling(int new_policy, int new_priority) noexcept {
   return true;
 }
 
+inline
 void
 thread::change_scheduling(int policy, int priority) noexcept {
   if (false == try_scheduling(policy, priority)) {

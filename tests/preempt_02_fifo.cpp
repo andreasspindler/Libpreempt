@@ -12,11 +12,8 @@
  * pthread_create() was called.
  */
 #include <preempt/process.h>
-#include <preempt/posix_thread.h>
-
+#include <base/pthread.h>
 #include <base/debug.h>
-
-namespace pre = preempt;
 
 int global_value;
 
@@ -24,26 +21,26 @@ void* decrement(void *expected_global_value);
 
 int main(int argc, char *argv[])
 {
+   preempt::this_process::begin_realtime();
+
   global_value = 9;
 
   int expected[] { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
-  pre::this_process::begin_realtime();
-
   /* Replace SCHED_FIFO by SCHED_RR and this test can go wrong with a
      probability of approx. 0.1%. The only reason why this probability is not
      higher is the shortness of decrement(). */
-  pre::posix_thread handle[10] {
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[0]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[1]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[2]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[3]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[4]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[5]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[6]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[7]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[8]),
-    pre::posix_thread(SCHED_FIFO, 1, decrement, &expected[9]),
+  base::pthread handle[10] {
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[0]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[1]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[2]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[3]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[4]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[5]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[6]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[7]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[8]),
+    base::pthread(SCHED_FIFO, 1, decrement, &expected[9]),
   };
 
   for (int i = 0; i < 10; ++i) {
@@ -55,7 +52,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  pre::this_process::end_realtime();
+  preempt::this_process::end_realtime();
 
   if (global_value == -1) {
     return EXIT_SUCCESS;
