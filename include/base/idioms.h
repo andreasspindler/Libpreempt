@@ -22,8 +22,6 @@ public:
    */
   virtual void start() { }
   virtual void stop() { }
-
-protected:
   virtual void run() = 0;
 };
 
