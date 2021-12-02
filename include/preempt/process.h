@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include <base/details/system.h>
+#include <base/posix.h>
 
 namespace preempt {
 pid_t
@@ -75,4 +75,10 @@ disable_core_file();
 void
 yield();
 } // this_process
+
+void
+request_CPU_latency(unsigned c_state);
+
+void
+reset_CPU_latency();
 } // preempt

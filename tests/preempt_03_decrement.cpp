@@ -11,18 +11,15 @@
  * or a lower priority than the last FIFO thread.
  */
 #include <preempt/process.h>
-#include <preempt/posix_thread.h>
-
+#include <base/pthread.h>
 #include <base/debug.h>
-
-#include <iostream>
 
 #include <cstdlib>
 #include <memory>
 #include <vector>
+//#include <iostream>
 
 using namespace std;
-namespace pre = preempt;
 
 int global_value;
 
@@ -34,7 +31,7 @@ run(int (&priority_table)[N]);
 
 int main(int argc, char *argv[])
 {
-  pre::this_process::begin_realtime();
+  preempt::this_process::begin_realtime();
 
   // FIFO: decreasing or equal priorities (only higher than 0 allowed)
   { int tab[] = {  1,  1,  1 }; run<SCHED_FIFO>(tab); }
@@ -48,7 +45,7 @@ int main(int argc, char *argv[])
   { int tab[] = { 30, 29, 28,
                   27, 26, 25 }; run<SCHED_RR>(tab); }
 
-  pre::this_process::end_realtime();
+  preempt::this_process::end_realtime();
 
   return EXIT_SUCCESS;
 }
@@ -74,9 +71,9 @@ run(int (&priority_table)[N])
   }
 
   /* start and join threads */
-  pre::posix_thread context[N];
+  base::pthread context[N];
   for (int i = 0; i < N; i++) {
-    context[i] = pre::posix_thread(Policy, priority_table[i], decrement, expected[i].get());
+    context[i] = base::pthread(Policy, priority_table[i], decrement, expected[i].get());
     if (context[i].joinable) {
       continue;
     } else {

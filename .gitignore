@@ -2,16 +2,10 @@
 
 # general
 SCRATCH
+PLAN
 *.deprecated
 *.lnk
 *.tmp
-
-# project-specific
-.attic/
-out/
-*.stderr
-*.stdout
-_*.cpp
 
 # emacs, vim, ctags
 *~
@@ -27,6 +21,15 @@ Session.vim
 # gdb scripts
 gdb*
 
-
 # gcc profiler files
 *.gc*
+
+# project-specific
+\#*/
+\#steinbruch/
+out/
+*.stderr
+*.stdout
+_*
+
+# EOF

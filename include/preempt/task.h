@@ -1,6 +1,6 @@
 /* -*-coding:raw-text-unix-*-
  *
- * preempt/tasks.h -- tasks own threads
+ * preempt/task.h -- base classes for classes using threads
  */
 #pragma once
 
@@ -10,12 +10,23 @@
 
 namespace preempt {
 /**
- * Distributes work to a single thread.
+ * Basic task interface.
+ */
+class basic_task {
+public:
+  /**
+   * Join the member thread(s).
+   */
+  virtual void join() = 0;
+};
+
+/**
+ * Contains a single thread to distribute work.
  *
  * @param Thread: std::thread or preempt::thread
  */
 template <typename Thread>
-class mono_task {
+class mono_task : public virtual basic_task {
 protected:
   Thread thread_;
 public:
@@ -28,16 +39,16 @@ public:
   /**
    * Join the member thread.
    */
-  void join();
+  void join() override;
 };
 
 /**
- * Distributes work to multiple threads.
+ * Contains a thread vector to distribute work.
  *
  * @param Thread: std::thread or preempt::thread
  */
 template <typename Thread>
-class poly_task {
+class poly_task : public virtual basic_task {
 protected:
   std::vector<Thread> threads_;
 public:
@@ -50,11 +61,11 @@ public:
   /**
    * Join all spawned threads.
    */
-  void join();
+  void join() override;
 };
 
 /***********************************************************************
- * implementation
+ * inlined implementation
  */
 template <class Thread>
 template <class Function, class... Args>

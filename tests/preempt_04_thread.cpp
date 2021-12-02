@@ -5,13 +5,12 @@
  * realtime scheduling policies on the running thread, as demonstrated in this
  * test.
  */
-#include <preempt/process.h>
 #include <preempt/thread.h>
-#include <string>
+#include <preempt/process.h>
 
 #include <base/debug.h>
 
-#include <iostream>
+#include <string>
 
 #define X "Om Gam Ganapataye Namaha"
 

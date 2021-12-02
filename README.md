@@ -18,12 +18,12 @@ Components:
 
 ### Run the tests provided
 
-The C ++ framework was not developed on a theoretical basis but on the basis of
-concrete, practical problems. These can be found in the form of individual files
-in the *tests/* subdirectory.
+The C++ framework was not developed on a theoretical basis but on the basis of
+concrete, practical "real-time" and "embedded" questions and scenarios. These
+can be found in the form of individual files in the *tests/* subdirectory.
 
-All tests can be started very easily by simply cloning the repository and
-calling `make`.
+All tests can be started very easily by cloning the repository and running
+`make`.
 
 Example:
 
@@ -34,64 +34,103 @@ Example:
 [sudo] password for jiva: 
 ./pudding.sh -D build 100
 ### multivm Libpreempt(all) *** WARNING: running under VM 
-### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 'Linux' (some tests will fail!) 
+### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 'Linux' 
+### multivm Libpreempt(all) *** WARNING: some tests will fail 
 make[1]: Entering directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-all'
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_02_fifo.c++17.debug ../../tests/preempt_02_fifo.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_03_fifo.c++17.debug ../../tests/preempt_03_fifo.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_02_fifo.c++14.debug ../../tests/preempt_02_fifo.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o task_01_monopoly.c++14.debug ../../tests/task_01_monopoly.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_01_thread.c++14.debug ../../tests/std_01_thread.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_02_nonstatic.c++17.debug ../../tests/std_02_nonstatic.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o task_01_monopoly.c++17.debug ../../tests/task_01_monopoly.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_03_array.c++14.debug ../../tests/std_03_array.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_04_lambda.c++14.debug ../../tests/std_04_lambda.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_04_thread.c++17.debug ../../tests/preempt_04_thread.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_01_thread.c++17.debug ../../tests/std_01_thread.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_01_other.c++14.debug ../../tests/preempt_01_other.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_01_other.c++17.debug ../../tests/preempt_01_other.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_03_array.c++17.debug ../../tests/std_03_array.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_03_fifo.c++14.debug ../../tests/preempt_03_fifo.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++17 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_04_lambda.c++17.debug ../../tests/std_04_lambda.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o preempt_04_thread.c++14.debug ../../tests/preempt_04_thread.cpp ../../src/base.cpp ../../src/process.cpp
-g++ -std=c++14 -pthread -D_GNU_SOURCE -fmax-errors=5 -Og -ggdb -pedantic -I../../include -o std_02_nonstatic.c++14.debug ../../tests/std_02_nonstatic.cpp ../../src/base.cpp ../../src/process.cpp
+make[1]: Nothing to be done for 'build'.
 make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-all'
-### multivm Libpreempt(all) *** executing command '100' [Thu, 02 Dec 2021 12:29:52 +0100]
+### multivm Libpreempt(all) *** executing command '100' [Sat, 04 Dec 2021 18:56:43 +0100]
 ### multivm Libpreempt(all) *** c++14 c++17 debug
-### multivm Libpreempt(all) *** 9 tests => 18 target(s) => 1800 total run(s)
-#   1/  18: preempt_01_other.c++14.debug                    100 run(s)          0 bad        100 good
-#   2/  18: preempt_01_other.c++17.debug                    100 run(s)          0 bad        100 good
-#   3/  18: preempt_02_fifo.c++14.debug                     100 run(s)          0 bad        100 good
-#   4/  18: preempt_02_fifo.c++17.debug                     100 run(s)          1 bad         99 good
-#   5/  18: preempt_03_fifo.c++14.debug                     100 run(s)         10 bad         90 good
-#   6/  18: preempt_03_fifo.c++17.debug                     100 run(s)         12 bad         88 good
-#   7/  18: preempt_04_thread.c++14.debug                   100 run(s)          0 bad        100 good
-#   8/  18: preempt_04_thread.c++17.debug                   100 run(s)          0 bad        100 good
-#   9/  18: std_01_thread.c++14.debug                       100 run(s)          0 bad        100 good
-#  10/  18: std_01_thread.c++17.debug                       100 run(s)          0 bad        100 good
-#  11/  18: std_02_nonstatic.c++14.debug                    100 run(s)          0 bad        100 good
-#  12/  18: std_02_nonstatic.c++17.debug                    100 run(s)          0 bad        100 good
-#  13/  18: std_03_array.c++14.debug                        100 run(s)          0 bad        100 good
-#  14/  18: std_03_array.c++17.debug                        100 run(s)          0 bad        100 good
-#  15/  18: std_04_lambda.c++14.debug                       100 run(s)          0 bad        100 good
-#  16/  18: std_04_lambda.c++17.debug                       100 run(s)          0 bad        100 good
-#  17/  18: task_01_monopoly.c++14.debug                    100 run(s)          0 bad        100 good
-#  18/  18: task_01_monopoly.c++17.debug                    100 run(s)          0 bad        100 good
-### multivm Libpreempt(all) *** 98.700% (1800 runs = 1777 good + 23 bad + 0 missing)
+### multivm Libpreempt(all) *** 12 tests => 24 target(s) => 2400 total run(s)
+#   1/  24: base_01_thread.c++14.debug                      100 run(s)          0 bad        100 good
+#   2/  24: base_01_thread.c++17.debug                      100 run(s)          0 bad        100 good
+#   3/  24: preempt_01_self.c++14.debug                     100 run(s)          0 bad        100 good
+#   4/  24: preempt_01_self.c++17.debug                     100 run(s)          0 bad        100 good
+#   5/  24: preempt_02_fifo.c++14.debug                     100 run(s)          0 bad        100 good
+#   6/  24: preempt_02_fifo.c++17.debug                     100 run(s)          0 bad        100 good
+#   7/  24: preempt_03_decrement.c++14.debug                100 run(s)         15 bad         85 good
+#   8/  24: preempt_03_decrement.c++17.debug                100 run(s) 	        20 bad         80 good
+#   9/  24: preempt_04_thread.c++14.debug                   100 run(s)          0 bad        100 good
+#  10/  24: preempt_04_thread.c++17.debug                   100 run(s)          0 bad        100 good
+#  11/  24: std_01_self.c++14.debug                         100 run(s)          0 bad        100 good
+#  12/  24: std_01_self.c++17.debug                         100 run(s)          0 bad        100 good
+#  13/  24: std_01_thread.c++14.debug                       100 run(s)          0 bad        100 good
+#  14/  24: std_01_thread.c++17.debug                       100 run(s)          0 bad        100 good
+#  15/  24: std_02_nonstatic.c++14.debug                    100 run(s)          0 bad        100 good
+#  16/  24: std_02_nonstatic.c++17.debug                    100 run(s)          0 bad        100 good
+#  17/  24: std_03_array.c++14.debug                        100 run(s)          0 bad        100 good
+#  18/  24: std_03_array.c++17.debug                        100 run(s)          0 bad        100 good
+#  19/  24: std_04_lambda.c++14.debug                       100 run(s)          0 bad        100 good
+#  20/  24: std_04_lambda.c++17.debug                       100 run(s)          0 bad        100 good
+#  21/  24: task_01_monopoly.c++14.debug                    100 run(s)          0 bad        100 good
+#  22/  24: task_01_monopoly.c++17.debug                    100 run(s)          0 bad        100 good
+#  23/  24: task_02_clock.c++14.debug                       100 run(s)          1 bad         99 good
+#  24/  24: task_02_clock.c++17.debug                       100 run(s)          3 bad         97 good
+### multivm Libpreempt(all) *** 98.300% (2400 runs = 2361 good + 39 bad + 0 missing)
 make: *** [Makefile:8: all] Error 1
 ```
 
-Don't be impressed. Make simply calls the test driver `pudding.sh` here. First
-the script compiles a matrix of executables for each single test. Each test is
-stretched over different C++ standards, optimization levels and (optionally) CPU
-micro-architecures. In this way it compiles many executable files for each
-single C++ file. Second, the script runs all executables repeatedly and
-summarizes results only based on exit codes.
+First the script compiles a matrix of executables for each single test. Each
+test is stretched over different C++ standards, optimization levels and
+(optionally) CPU micro-architecures. In this way it compiles many executable
+files for each single C++ file. Second, the script runs all executables
+repeatedly and summarizes results based on exit codes.
 
-A run is successful if the process returns code 0 (`EXIT_SUCCESS`). So no test
-framework is required on the C++ side. A test is successful when all `assert()`
-calls return and neither `std::abort()` nor `std::terminate()` was called.
+Make is prefixed `sudo` because unless the user has **scheduling privileges**
+executing programs that use one of the real-time scheduling policies will fail
+(permission denied).
 
-We have five test categories based on each other:
+A run is considered good if the process succeeds. So no test framework is
+required on the C++ side. Specifically, that means: all `assert()` calls hold
+true, neither `std::abort()` nor `std::terminate()` was called and the main
+function returns 0.
+
+If the *PREEMPT_RT* patches are installed all tests should complete 100%,
+otherwise the rate of successful tests should be will over 95% under Linux and
+50% under layers like Cygwin.
+
+NOTE: Since the tests are all standard C++ they should compile on non-UNIX
+      systems such as Windows too. However, currently the test driver generates
+      a Makefile for GNU/Linux only. The plan is to have this part, which is
+      implemented a little "brute force" at the moment, done with Cmake, but the
+      author has not had the time for that yet. Pull requests welcome.
+
+## Installing
+
+``` sh
+ > git clone https://github.com/andreasspindler/Libpreempt
+```
+
+## Details
+
+### Real-time framework
+
+*Libpreempt* is a C++ library build around the concepts of **threads**,
+**tasks** and **schedulers**. It is based on standard C++ and POSIX and defined
+in namespace `preempt`
+
+**Thread**
+: Independent units of execution within a process (functions, class methods).
+  Defines class `preempt::thread` in file *include/preempt/thread.h* with the
+  same interface as `std::thread` but with optional real-time scheduling.
+
+**Task**
+: Any class with at least one thread attribute. Tasks can run standard threads
+  and real-time threads. Defines the base classes `preempt::mono_task` and
+  `preempt::poly_task` in file *include/preempt/task.h*.
+
+**Scheduler**
+: An object that schedules tasks using a real-time clock-thread that runs with
+  priority 99. Runs tasks based on ticks which are defined in microseconds.
+
+### Real-time scheduler test suite
+
+Every test has the form of a C++ file and has been carefully written in a way
+that (1) it runs one specific scenario and (2) is human readable. Each test will
+verify several attributes of the **Linux real-time scheduler** with regard to
+the POSIX scheduling policies.
+
+#### Test categories
 
 ```
        std ==> task ===|
@@ -112,58 +151,6 @@ task
 process
 : Sample applications for tasks.
 
-Make is prefixed with *sudo* because unless the user has **scheduling
-privileges** executing programs that use one of the real-time scheduling
-policies will fail (permission denied).
-
-## Installing
-
-``` sh
- > git clone https://github.com/andreasspindler/Libpreempt
-```
-
-## Details
-
-### Real-time framework
-
-*Libpreempt* is a C++ library build around the concepts of **threads**,
-**tasks** and **schedulers**. It is based on standard C++ and POSIX and defined
-in namespace `preempt`
-
-**Thread**
-: Independent units of execution within a process. Defines class
-  `preempt::thread` with the same interface as `std::thread` but with optional
-  real-time scheduling.
-
-**Task**
-: Any class with at least one thread attribute. Tasks can run standard threads
-  and real-time threads. The framework defines the basic classes
-  `preempt::mono_task` and `preempt::poly_task` in file
-  *include/preempt/task.h*.
-
-**Scheduler**
-: An object that schedules tasks using a real-time clock-thread that runs with
-  priority 99. Runs tasks based on ticks which are defined in microseconds.
-
-### Real-time scheduler test suite
-
-Every test has the form of a C++ file and has been carefully written in a way
-that (1) it runs one specific scenario and (2) is human readable. Each test will
-verify several attributes of the **Linux real-time scheduler** with regard to
-the POSIX scheduling policies.
-
-``` sh
- > sudo make
-```
-
-The default Make target compiles all programs in the *tests/* folder for C++14
-and C++17 and executes each compilation 100 times, counting the failed and
-successful attempts.
-
-If the *PREEMPT_RT* patches are installed all tests should complete 100%,
-otherwise the rate of successful tests should be over 95% under Linux and still
-greater than 0% under layers like Cygwin.
-
 ### Etymology
 
 The name "preempt" is short for preemptive. The name is a reminder that
@@ -182,25 +169,25 @@ versions and promises aside.
 
 Only four reasons are known to the author.
 
-**PREEMPT_RT** patches are not installed.
-: The code compiles because POSIX does not require an RTOS; in other words, a
-  kernel can implement `SCHED_FIFO` and `SCHED_RR` with best effort. But some
-  tests are so tight that they must fail if the kernel is not patched.
-
 The user has no **scheduling privileges**
 : Use `ulimit -r` to see the maximum real-time priority the current user can
   use. If this value is 0 then the current user is not allowed to use real-time
   scheduling policies. In this case, the affected test fails 100%. See also
   */etc/security/limits.conf*.
 
+Linux **PREEMPT_RT** patches are not installed
+: The code compiles because POSIX does not require an RTOS; in other words, a
+  kernel can implement `SCHED_FIFO` and `SCHED_RR` with best effort. But some
+  tests are so tight that they must fail if the kernel is not patched.
+
 Linux **RT throttling** enabled
 : If tests only fail sometimes (not 100%) then Linux RT throttling is likely
   enabled.
 
-**Page-faults** occur
+**Page-faults** have occured
 : The only other thing known to mess with the real-time scheduling policies is
-  the memory manager. To disable page-faults all pages must be locked before
-  calling creating a real-time thread.
+  the memory manager. To prevent page-faults all pages must be locked before
+  creating a real-time thread.
 
 ``` c++
 #include <preempt/process.h>
@@ -266,7 +253,6 @@ is needed if:
                          ^
                          |
                          |
-                         indicates RTOS
 ```
 
 ## Does Yocto-Linux has an RT kernel?
@@ -318,20 +304,18 @@ a higher priority `SCHED_FIFO` or `SCHED_RR`, or it calls `sched_yield()`.
 
 ### How do time-slices affect SCHED_FIFO and SCHED_RR?
 
-They don't. `SCHED_FIFO` and `SCHED_RR` are simple scheduling algorithms without
-time slicing.
+They don't. `SCHED_FIFO` and `SCHED_RR` are scheduling algorithms without time
+slicing.
 
-While a thread may or may not have started when `pthread_create()` returns
-`SCHED_FIFO` threads are always executed in the order of their creation.
+For example, while a thread may or may not have started when `pthread_create()`
+returns `SCHED_FIFO` threads are always executed in the order of their creation.
 
 ### Which priorities are valid for SCHED_FIFO and SCHED_RR?
 
 In POSIX 1-32, under Linux 1-99. The kernel can't change the priority.
-
-A source of error is to pass 0 as the priority. `SCHED_FIFO` can be used only
-with static priorities higher than 0, which means that when a `SCHED_FIFO`
-becomes runnable, it will always immediately preempt any currently running
-`SCHED_OTHER`, `SCHED_BATCH`, or `SCHED_IDLE` threads.
+`SCHED_FIFO` can be used only with static priorities higher than 0, which means
+that when a `SCHED_FIFO` becomes runnable, it will always immediately preempt
+any currently running `SCHED_OTHER`, `SCHED_BATCH`, or `SCHED_IDLE` threads.
 
 https://man7.org/linux/man-pages/man7/sched.7.html
 

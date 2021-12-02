@@ -33,7 +33,9 @@ public:
 
   /** Get elapsed time so far in microseconds. */
   long microseconds() const;
-  double elapsed() const;
+
+  /** Get elapsed time in microseconds. */
+  double stop() const;
 
 private:
   template <typename T>
@@ -42,6 +44,17 @@ private:
   using clock_type = std::chrono::high_resolution_clock;
 
   std::chrono::time_point<clock_type> const t0_;
+};
+
+/**
+ * Define a deadline (future std::chrono::system_clock::time_point).
+ */
+class deadline {
+public:
+  deadline(int usec);
+
+private:
+  std::chrono::system_clock::time_point t_;
 };
 
 /**
@@ -76,19 +89,19 @@ private:
  */
 inline
 stopwatch::stopwatch()
-  : t_ {clock_type::now()} { }
+  : t0_ {clock_type::now()} { }
 
 inline
 double
-stopwatch::elapsed() const {
-  std::chrono::duration<double, std::micro> const us = clock_type::now() - t_;
+stopwatch::stop() const {
+  std::chrono::duration<double, std::micro> const us = clock_type::now() - t0_;
   return us.count();
 }
 
 template <typename T>
 long
 stopwatch::cast() const {
-  return std::chrono::t_cast<T>(clock_type::now() - t_).count();
+  return std::chrono::duration_cast<T>(clock_type::now() - t0_).count();
 }
 
 inline
@@ -109,6 +122,7 @@ stopwatch::microseconds() const {
   return cast<std::chrono::microseconds>();
 }
 
+#if 0
 inline
 timeout::timeout(long ms)
   : t_ {ms}, t1_ {std::chrono::system_clock::now() + ms} { }
@@ -124,4 +138,5 @@ bool
 timeout::undefined() const {
   return t_ == std::chrono::milliseconds {0};
 }
+#endif
 } /* base */

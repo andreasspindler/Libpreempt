@@ -232,18 +232,23 @@ EOF
   esac
 
   ((RunningUnderVM)) && warn "running under VM"
-  ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel '$(uname -s)' (some tests will fail!)"
   if ((RunningAsRoot)); then
     :
   elif ((UserMaximumRTPriority==0)); then
-    error "user '$USER' cannot start real-time threads (many tests will fail!)"
+    error "user '$USER' cannot start real-time threads (many tests will fail"
+    error "many tests will fail"
   elif ((UserMaximumRTPriority<32)); then
-    error "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority (many tests will fail)"
+    error "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
+    error "many tests will fail"
   elif ((RunningUnderLinux)); then
-    if ((UserMaximumRTPriority<99)); then
+    if ((UserMaximumRTPriority < 99)); then
       warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority (Linux allows up to 99)"
     fi
   fi
+  ((RunningUnderPREEMPT)) || {
+    warn "no PREEMPT_RT patches installed in kernel '$(uname -s)'"
+    warn "some tests will fail"
+  }
 
   {
     Summary=0 TotalRuns=0 TotalGood=0 TotalBad=0 TotalMissing=0

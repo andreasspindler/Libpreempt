@@ -21,13 +21,12 @@
 /***********************************************
  * The build system must have enabled POSIX
  *
- * There are various POSIX APIs. The program must define which parts
- * of POSIX are required.
+ * There are various POSIX APIs. The program must define which parts of POSIX
+ * are required.
  *
- * _GNU_SOURCE includes everything: ISO C89, ISO C99, POSIX.1,
- * POSIX.2, BSD, SVID, X/Open, LFS, and GNU extensions. In the cases
- * where POSIX.1 conflicts with BSD, the POSIX definitions take
- * precedence.
+ * _GNU_SOURCE includes everything: ISO C89, ISO C99, POSIX.1, POSIX.2, BSD,
+ * SVID, X/Open, LFS, and GNU extensions. In the cases where POSIX.1 conflicts
+ * with BSD, the POSIX definitions take precedence.
  */
 #if defined(_GNU_SOURCE)
 #else
