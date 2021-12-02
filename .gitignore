@@ -1,26 +1,32 @@
 # -*-mode: hosts-generic; coding:raw-text-unix;-*-
 
+# general
+SCRATCH
+*.deprecated
+*.lnk
+*.tmp
+
+# project-specific
+.attic/
+out/
+*.stderr
+*.stdout
+_*.cpp
+
 # emacs, vim, ctags
 *~
 \#*
 .\#*
 .\#*\#
+tags
 TAGS
-TBD
 BROWSE
 Session.vim
 .emacs.*
 
-# project-specific
-.attic/
-out/
-*.lnk
-*.stderr
-*.stdout
-_*.cpp
-
-# gdb -x scripts
+# gdb scripts
 gdb*
+
 
 # gcc profiler files
 *.gc*
