@@ -21,7 +21,7 @@ void* decrement(void *expected_global_value);
 
 int main(int argc, char *argv[])
 {
-   preempt::this_process::begin_realtime();
+  preempt::this_process::begin_realtime();
 
   global_value = 9;
 

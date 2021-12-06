@@ -47,17 +47,6 @@ private:
 };
 
 /**
- * Define a deadline (future std::chrono::system_clock::time_point).
- */
-class deadline {
-public:
-  deadline(int usec);
-
-private:
-  std::chrono::system_clock::time_point t_;
-};
-
-/**
  * Test if a time condition was met.
  *
  * Example:
@@ -77,11 +66,10 @@ public:
   timeout(long ms = 0);
 
   bool reached() const;
-  bool undefined() const;
+  operator bool() const;
 
 private:
-  std::chrono::milliseconds const t_;              // duration
-  std::chrono::system_clock::time_point const t1_; // future
+  std::chrono::system_clock::time_point const t1_;
 };
 
 /***********************************************************************
@@ -122,21 +110,19 @@ stopwatch::microseconds() const {
   return cast<std::chrono::microseconds>();
 }
 
-#if 0
 inline
 timeout::timeout(long ms)
-  : t_ {ms}, t1_ {std::chrono::system_clock::now() + ms} { }
+  : t1_ {std::chrono::system_clock::now() +
+         std::chrono::milliseconds {ms}} { }
 
 inline
 bool
 timeout::reached() const {
-  return !undefined() && std::chrono::system_clock::now() >= t1_;
+  return std::chrono::system_clock::now() >= t1_;
 }
 
 inline
-bool
-timeout::undefined() const {
-  return t_ == std::chrono::milliseconds {0};
+timeout::operator bool() const {
+  return reached();
 }
-#endif
 } /* base */
