@@ -24,7 +24,8 @@ struct CriticalSort : CriticalTask<Ms> {
   void run() override {
     srand(time(nullptr));
     // for (auto& i : data) { i = rand() % data.size() + 1; }
-    generate(data.begin(), data.end(), [this]()->value_type { return rand() % data.size() + 1; });
+    generate(data.begin(), data.end(),
+             [this]()->value_type { return rand() % data.size() + 1; });
     sort(data.begin(), data.end());
   }
 };
@@ -38,12 +39,8 @@ main(int argc, char *argv[])
   t.start(3);
   u.start(2);
 
-  try {
-    t.join(); PRINT(t);
-    u.join(); PRINT(u);
-    return EXIT_SUCCESS;
-  } catch (deadline_error e) {
-    cerr << e.what() << endl;
-    return EXIT_FAILURE;
-  }
+  t.join(); PRINT(t);
+  u.join(); PRINT(u);
+
+  return EXIT_SUCCESS;
 }

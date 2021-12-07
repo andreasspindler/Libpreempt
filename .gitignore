@@ -28,6 +28,7 @@ gdb*
 \#*/
 \#steinbruch/
 out/
+*.mak
 *.stderr
 *.stdout
 _*

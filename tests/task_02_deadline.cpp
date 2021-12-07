@@ -28,12 +28,8 @@ main(int argc, char *argv[])
   t1.start(2);
   t2.start(1);
 
-  try {
-    t1.join(); PRINT(t1);
-    t2.join(); PRINT(t2);
-    return EXIT_SUCCESS;
-  } catch (deadline_error e) {
-    cerr << e.what() << endl;
-    return EXIT_FAILURE;
-  }
+  t1.join(); PRINT(t1);
+  t2.join(); PRINT(t2);
+
+  return EXIT_SUCCESS;
 }

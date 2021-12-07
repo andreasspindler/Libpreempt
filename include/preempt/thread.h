@@ -6,6 +6,7 @@
 
 #include <base/posix.h>
 #include <base/string.h>
+#include <base/debug.h>
 
 #include <thread>
 #include <memory>
@@ -56,7 +57,8 @@ public:
       can preempt any other threads with a lower priority (@ref
       change_scheduling).
 
-      If setting the policy/priority fails the process is terminated.1
+      If setting the policy/priority fails the process is exited with
+      EXIT_FAILURE.
   */
   template<class Function, class... Args>
   explicit thread(int policy, int priority, Function&&, Args&&...);
@@ -128,8 +130,9 @@ public:
   */
   bool try_scheduling(int policy, int priority) noexcept;
 
-  /** Like try_scheduling() but call std::terminate() if it fails. To test if a
-      realtime scheduler is available use eiter:
+  /** Like try_scheduling() but call std::quick_exit(EXIT_FAILURE) if
+      it fails. To test if a realtime scheduler is available use
+      eiter:
 
          assert(base::have_realtime_kernel())
   */
@@ -144,7 +147,8 @@ private:
 
 #if 0
 /**
- * @brief Like preempt::thread but with static priority and scheduling policy
+ * @brief Like preempt::thread but with static priority and scheduling
+ * policy
  */
 template <int Policy, int Priority>
 class static_thread : public thread {
@@ -152,9 +156,10 @@ public:
   static_thread(static_thread<Policy, Priority>&& other)
     : thread {std::move(other)} { }
 
-  /** Construct new, normal thread object. Under POSIX this means a thread
-      running under the SCHED_OTHER scheduling policy and priority 0. To set a
-      new scheduling policy and priority @ref try_scheduling(). */
+  /** Construct new, normal thread object. Under POSIX this means a
+      thread running under the SCHED_OTHER scheduling policy and
+      priority 0. To set a new scheduling policy and priority @ref
+      try_scheduling(). */
   template<class Function, class... Args>
   explicit static_thread(Function&& f, Args&&... args)
     : thread {std::forward<Function>(f), std::forward<Args>(args)...} {
@@ -248,7 +253,7 @@ thread::try_scheduling(int new_policy, int new_priority) noexcept {
   if (int errnum = pthread_setschedparam(native_handle(), new_policy, &sch)) {
     switch (errnum) {
     case ESRCH:
-      /* The thread has already been terminated ("No such process"). */
+      /* The thread is not available ("No such process"). */
       return true;
     case EINVAL:
     case EPERM:
@@ -264,7 +269,7 @@ inline
 void
 thread::change_scheduling(int policy, int priority) noexcept {
   if (false == try_scheduling(policy, priority)) {
-    std::terminate();
+    base::terminate(error_.c_str());
   }
 }
 

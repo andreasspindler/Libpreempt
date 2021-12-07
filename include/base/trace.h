@@ -10,6 +10,8 @@
 #include <ctime>
 #include <iostream>
 
+#include <base/macros.h>
+
 namespace base {
 /**
  * Print to stderr with timestamp prefix.
@@ -17,6 +19,8 @@ namespace base {
 inline
 void
 trace(char const* fmt, ...) {
+  static std::mutex lock;
+  BASE_STD_GUARD(lock);
   std::va_list val;
   va_start(val, fmt);
   std::time_t now;
@@ -28,6 +32,18 @@ trace(char const* fmt, ...) {
   std::fflush(stderr);
   va_end(val);
 }
+
+/**
+ * @example:
+ *    do {
+ *        .
+ *        .
+ *    } while (TRACE_IF_TRUE(condition));
+ */
+#define TRACE_IF_TRUE(expr) \
+(void) ((!!(expr)) && (base::trace("Expression is true: ", #expr, __FILE__, __LINE__), 1))
+#define TRACE_IF_FALSE(expr) \
+(void) ((!!(expr)) || (base::trace("Expression is false: ", #expr, __FILE__, __LINE__), 0))
 
 /**
  * Print to stdout if BASE_LOGGING is defined.

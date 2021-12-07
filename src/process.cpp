@@ -29,10 +29,8 @@ terminate_unless_rtprio(int required_priority) {
   max_fifo = sched_get_priority_max(SCHED_FIFO);
 
   if (getrlimit(RLIMIT_RTPRIO, &rl) != 0) {
-    error_ = base::sprintf("FAILED: pthread_setschedparam(): '%s'", std::strerror(errnum));
-    e = errno;
-    printf("Failed to getrlimit(): %s.\n", strerror(e));
-    std::terminate();
+    error_ = base::sprintf("FAILED: getrlimit(): '%s'", std::strerror(errno));
+    std::quick_exit(EXIT_FAILURE);
   }
 }
 #endif

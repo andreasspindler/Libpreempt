@@ -6,6 +6,8 @@
 
 #include <mutex>
 
+#include <base/macros.h>
+
 namespace base {
 /**
  * @brief Basic runnable interface
@@ -78,9 +80,6 @@ private:
   Params params_;
   std::mutex lock_;
 };
-
-#define BASE_LINE_VAR(var)    var ## __LINE__
-#define BASE_STD_GUARD(lock)  std::lock_guard<decltype(lock)> BASE_LINE_VAR(g) {lock}
 
 /***********************************************************************
  * inlined implementation

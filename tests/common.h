@@ -9,8 +9,6 @@
 
 #include <preempt/task.h>
 
-using deadline_error = std::logic_error;
-
 /**
  * This task runs a thread that measures the time it consumes and
  * exits if a time slice was not adhered to.
@@ -20,9 +18,11 @@ using deadline_error = std::logic_error;
  *            longer.
  */
 template <int Ms>
-class CriticalTask : public preempt::mono_task<> {
+class CriticalTask : public preempt::mono_task<>, public base::runnable {
 public:
   using clock = std::chrono::high_resolution_clock;
+
+  virtual ~CriticalTask() { }
 
   /**
    * Create a SCHED_FIFO. Time measurement works only for realtime
@@ -70,13 +70,10 @@ CriticalTask<Ms>::hook()
   using namespace std::chrono;
   auto start = clock::now();
   auto deadline = start + milliseconds {Ms};
-  {
-    /* actual thread function */
-    run();
-  }
+  { run(); }
   auto stop = clock::now();
   if (stop > deadline) {
-    throw deadline_error {__FUNCTION__};
+    base::terminate("CriticalTask: deadline error");
   } else {
     auto us = duration_cast<microseconds>(stop - start);
     usec_ = us.count();

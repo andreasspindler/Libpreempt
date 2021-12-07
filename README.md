@@ -81,9 +81,8 @@ executing programs that use one of the real-time scheduling policies will fail
 (permission denied).
 
 A run is considered good if the process succeeds. So no test framework is
-required on the C++ side. Specifically, that means: all `assert()` calls hold
-true, neither `std::abort()` nor `std::terminate()` was called and the main
-function returns 0.
+required on the C++ side. If the process returns exit code 0 it passed,
+otherwise not.
 
 If the *PREEMPT_RT* patches are installed all tests should complete 100%,
 otherwise the rate of successful tests should be will over 95% under Linux and

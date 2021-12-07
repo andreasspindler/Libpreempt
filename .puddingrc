@@ -11,7 +11,7 @@
 #
 TestTarget='Libpreempt'
 
-case ${TestFlavor}
+case ${Flavor}
 in
   std)
     Tests=($(find_tests $TestDir 'std_*.cpp'))
@@ -19,9 +19,9 @@ in
   sched)
     Tests=($(find_tests $TestDir 'sched_*.cpp'))
     ;;
-  parinama)
-    # parinama is a Sanskrit word and means development, change
-    Tests=($(find_tests $TestDir 'task_03*.cpp'))
+  parinama)                     # Sanskrit: development, change
+    Tests=($(find_tests $TestDir 'task_*.cpp'))
+    Standards=(c++17)
+    Make=(make -S -j1)
     ;;
 esac
-

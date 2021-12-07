@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
   /* Static class member function Task4::execute() */
   std::thread th {&Task4::execute, "example"};
 
-  /* The destructor of std::thread invokes std::terminate when the
-     thread wasn't joined or detached. */
+  /* The std::thread dtor calss std::terminate if the thread wasn't
+     joined or detached. */
   th.join();
   for (std::thread& th : tha) {
     th.join();

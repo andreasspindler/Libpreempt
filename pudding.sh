@@ -13,16 +13,13 @@
   # we use camel-case to denote global variables
   #
   TestTarget=$(basename "$PWD")
-  TestFlavor='all'
   TestDir='tests'
   TestOutDir="out"
-  TestMakefile='Makefile'
-  TestOptimizations=()
-  CC='g++'
-  CCStandards=(c++14 c++17)
-  CCBaseFlags=(-pthread -D_GNU_SOURCE -fmax-errors=5)
-  Make=(make -k)
-  MakeJobs=$(($(nproc) * 1))
+  Flavor='all'
+  CC=(g++ -pthread -D_GNU_SOURCE -fmax-errors=5)
+  Standards=(c++14 c++17)
+  Optimizations=()
+  Make=(make -S -j$(($(nproc) * 1)))
   Sudo=''
   {
     usage() {
@@ -39,7 +36,7 @@ Options:
   -E            shortcut for '-o enlightened'
   -R            shortcut for '-o release'
   -j<JOBS>      number of make jobs
-  -q            silent mode (use twice to suppress warnings too)
+  -q            increase silent mode
   -s            shy mode (stop if a run fails instead of counting)
   -S            run test targets under 'sudo'
   -h            help
@@ -48,31 +45,29 @@ Valid values for <CMD>:
 
   list      Lists all tests
 
-  <NUMBER>  Define the # of processes to spawn for each test. In shy mode (-s)
-            the script will stop if a run failed.
+  <NUMBER>  Define the # of processes to spawn for each test. In shy
+            mode (-s) the script will stop if a run failed.
 
   afk       dto. but do very many runs (yet not infinitely many)
 
-  test      Compile all files on all optimization levels and try a few runs.
+  stress    Compile all files on all optimization levels and try a few
+            runs.
 
-The value of <FLAVOR> is stored in the global variable 'TestFlavor' and has to
-be evaluated in '.puddingrc' by modifying other global variables to override
-their defaults. These are:
+Global variables that can be overrided in '.puddingrc':
 
   NAME                DEFAULT
+  Flavor              $Flavor
   TestDir             $TestDir
-  Tests               (<all .cpp-files in TestDir>)
-  TestOptimizations   (${TestOptimizations[@]})
-  CC                  $CC
-  CCStandards         (${CCStandards[@]})
+  Tests               (<all .cpp-files under TestDir>)
+  Standards           (${Standards[@]})
+  Optimizations       (${Optimizations[@]})
+  CC                  ${CC[@]}
   Make                (${Make[@]})
-  MakeJobs            $MakeJobs
 
-Valid values for <OPT> and valid entries for the 'TestOptimizations'
+Valid values for <OPT> and valid entries for the 'Optimizations'
 array:
 
-  NAME                COMPILER FLAGS
-  default             ${CCBaseFlags[@]}
+  NAME                EXTRA COMPILER FLAGS
   0|1|2|3|fast        -O<OPT>
   debug               create debug-info
   profile             profile time optimizations
@@ -83,48 +78,46 @@ EOF
       exit ${1:-1}
     }
 
-    optshy=0 optquiet=0 optparallelize=0 RunningUnderVM=0 RunningUnderPREEMPT=0
+    optshy=0 optquiet=0 optverbose=0 optparallelize=0
 
-    while getopts "DOPERf:o:j:qsSTh" o; do
+    while getopts "DOPERf:o:j:qsSh" o; do
       case "$o" in
-        D) TestOptimizations+=('debug');;
-        O) TestOptimizations+=('O0' 'O1' 'O2' 'O3' 'Os' 'Ofast');;
-        P) TestOptimizations+=('profile');;
-        E) TestOptimizations+=('enlightened');;
-        R) TestOptimizations+=('release');;
-        f) TestFlavor=$OPTARG;;
-        o) TestOptimizations+=($OPTARG);;
-        j) MakeJobs=$OPTARG;;
+        D) Optimizations+=('debug');;
+        O) Optimizations+=('O0' 'O1' 'O2' 'O3' 'Os' 'Ofast');;
+        P) Optimizations+=('profile');;
+        E) Optimizations+=('enlightened');;
+        R) Optimizations+=('release');;
+        f) Flavor=$OPTARG;;
+        o) Optimizations+=($OPTARG);;
+        j) Make+=(-j$OPTARG);;
         q) ((optquiet++));;
         s) ((optshy++));;
         S) Sudo='sudo';;
-        T) optassumepreempt=1;;
         h) usage 0;;
         *) usage 1;;
       esac
     done
     shift $((OPTIND-1))
     (($#)) && Cmds=("$@") || Cmds=()
-    ((${#TestOptimizations[@]})) || TestOptimizations=('default')
-    TestMarchDir="$TestOutDir/$(hostname)-$TestFlavor"
-    Make+=(-j$MakeJobs)
+    March=$(hostname)-$Flavor
+    OutDir="$TestOutDir/$March"
 
     find_tests() { find ${1:-$TestDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
     readcommit() { git -C ${1:-.} rev-parse --short ${2:-HEAD} || echo ''; }
-    ANSI_GRN="\033[1;92m"
-    ANSI_DGR="\033[1;32m"
-    ANSI_RED="\033[1;91m"
-    ANSI_DRD="\033[1;31m"
+    ANSI_GRN="\033[1;92m" ANSI_DGR="\033[1;32m"
+    ANSI_YLW="\033[1;33m"
+    ANSI_RED="\033[1;91m" ANSI_DRD="\033[1;31m"
     ANSI_OFF="\033[0m"
-    cout() { echo -e "### $(hostname) $TestTarget(${TestFlavor}) ***" "$@"; }
+    cout() { echo -e "### $(hostname) $TestTarget(${Flavor}) ***" "$@"; }
     cerr() { cout "$@"; } >&2
-    info() { ((optquiet==0)) && cout "$@"; }
+    info() { ((optquiet<1)) && cout "${ANSI_YLW}$@${ANSI_OFF}"; }
+    chat() { ((optquiet<2 && optverbose>0)) && cout "$@"; }
     warn() { cerr "${ANSI_DGR}WARNING:${ANSI_GRN}" "$@" "$ANSI_OFF"; }
     error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
     die() { cerr "ERROR:" "$@"; exit 1; }
     {
       missing=()
-      for x in $Sudo $CC ${Make[0]}; do
+      for x in $Sudo ${CC[0]} ${Make[0]}; do
         which $x 1>/dev/null 2>/dev/null || missing+=$x
       done
       ((${#missing[@]})) && die "system not ready: missing ${missing[@]}"
@@ -134,96 +127,107 @@ EOF
   ##############################################
   # populate array Tests
   #
-  # source .puddingrc
+  # source .puddingrc and complete global variables
   #
-  case $TestFlavor in
+  case $Flavor in
     ''|all|thorough)
       Tests=($(find_tests $TestDir))
       ;;
   esac
+  TestsSize=${#Tests[@]}
 
   [[ ! -f .puddingrc ]] || source .puddingrc || die 'bad .puddingrc'
-  TestCount=${#Tests[@]}
 
   ##############################################
   # populate array Targets
   #
-  # loop over all TestOptimizations
-  #    set CCStandards CCFlags
-  #    depending on TestFlavor
-  #       set Tests (evaluate .puddingrc in PWD)
-  #       optionally overload global variables
-  #    create makefile targets and rules
+  # loop over all Optimizations and create makefile targets and rules
   #
   {
     declare -A Targets Rules Clusters
     declare -a Flags
-    Targets=() Rules=() Flags=()
+    Targets=() Rules=()
 
     get_target_basename() {
       local cpptest=$1 std=$2 opt=$3
       echo -n "$(basename $cpptest .cpp).$std.$opt"
     }
 
-    for TestOptimization in ${TestOptimizations[@]}
-    do
-      CCFlags=("${CCBaseFlags[@]}")
-      case $TestOptimization in
-        default)      CCFlags+=();;
-        debug)        CCFlags+=(-Og -ggdb -pedantic);;
-        O*)           CCFlags+=(-$TestOptimization);;
-        profile)      CCFlags+=(-fprofile-arcs -ftest-coverage -lgcov);;
-        enlightened)  CCFlags+=(-flto -fno-fat-lto-objects);&
-        release)      CCFlags+=(-DNDEBUG -Werror);;
+    ((${#Optimizations[@]})) || Optimizations=('default')
+
+    for Optimization in ${Optimizations[@]}; do
+      Flags=()
+      case $Optimization in
+        default)      Flags+=();;
+        debug)        Flags+=(-Og -ggdb -pedantic);;
+        O*)           Flags+=(-$Optimization);;
+        profile)      Flags+=(-fprofile-arcs -ftest-coverage -lgcov);;
+        enlightened)  Flags+=(-flto -fno-fat-lto-objects);&
+        release)      Flags+=(-DNDEBUG -Werror);;
       esac
-      for CCTest in ${Tests[@]}; do
-        for CCStandard in ${CCStandards[@]}; do
-          Test=$(get_target_basename $CCTest $CCStandard $TestOptimization)
-          Flags=("-std=$CCStandard" "${CCFlags[@]}")
-          Targets["$Test"]="$CCTest"
-          Rules["$Test"]="${CC} ${Flags[@]} -I../../include -o \$@ \$^"
+      for Test in ${Tests[@]}; do
+        for Standard in ${Standards[@]}; do
+          Target=$(get_target_basename $Test $Standard $Optimization)
+          Targets["$Target"]=$Test
+          Rules["$Target"]="${CC[@]} -std=$Standard ${Flags[@]} -Iinclude -o \$@ \$^"
         done
       done
     done
-    TargetCount=${#Targets[@]}
+    TargetsSize=${#Targets[@]}
+    #info ${!Targets[@]}; exit
   }
 
   ##############################################
-  # create Makefile in $TestMarchDir
+  # create Makefile
   #
-  #info "creating: '$TestMarchDir/$TestMakefile'"
   {
-    mkdir -p $TestMarchDir
-    #info "writing '$TestMarchDir/$TestMakefile'"
-    cat >$TestMarchDir/$TestMakefile <<EOF
+    Makefile="${March}.mak"
+    chat "$Makefile => $OutDir/"
+    mkdir -p $OutDir
+
+    x=()
+    for Target in "${!Targets[@]}"; do
+      x+=("$OutDir/$Target")
+    done
+
+    cat >$Makefile <<EOF
 # -*- mode:makefile; eval:(auto-revert-mode); -*-
 #
-# $(basename "$(pwd)")/$TestMakefile
+# $(basename "$(pwd)")/Makefile
 #    $(date -u)
 #
 .PHONY: all build clean
 
-all: build
-build: ${!Targets[@]}
+build: ${x[@]}
 EOF
-    for k in "${!Targets[@]}"
-    do
-      echo "$k: ../../${Targets[$k]} \$(wildcard ../../src/*.cpp)" >>$TestMarchDir/$TestMakefile
-      echo -e "\t${Rules[$k]}" >>$TestMarchDir/$TestMakefile
-    done
-    cat >>$TestMarchDir/$TestMakefile <<EOF
 
+
+    for Target in "${!Targets[@]}"; do
+      Test=${Targets[$Target]}
+      cat >>$Makefile <<EOF
+$OutDir/$Target: $Test \$(wildcard src/*.cpp)
+$(printf "\t")${Rules[$Target]}
+
+EOF
+    done
+    for Test in "${!Targets[@]}"; do
+      Target="$OutDir/${Targets[$Test]}"
+    done
+    cat >>$Makefile <<EOF
 clean:
-$(printf "\t")find . -delete
+$(printf "\t")find $OutDir -type f -executable -delete
 EOF
   }
 
   ######################################################################
   # execute commands
   #
-  grep -q "^flags.*hypervisor" /proc/cpuinfo && RunningUnderVM=1 || RunningUnderVM=0
-  { uname -v | grep -w 'PREEMPT' >/dev/null; } && RunningUnderPREEMPT=1 || RunningUnderPREEMPT=0
-  UserMaximumRTPriority=$(ulimit -r)
+  RunningUnderVM=0
+  grep -q "^flags.*hypervisor" /proc/cpuinfo && RunningUnderVM=1
+
+  RunningUnderPREEMPT=0
+  { uname -v | grep -w 'PREEMPT' >/dev/null; } && RunningUnderPREEMPT=1
+
   RunningAsRoot=$((UID == 0))
 
   RunningUnderLinux=0
@@ -231,23 +235,22 @@ EOF
     Linux*) RunningUnderLinux=1;;
   esac
 
-  ((RunningUnderVM)) && warn "running under VM"
-  if ((RunningAsRoot)); then
-    :
-  elif ((UserMaximumRTPriority==0)); then
-    error "user '$USER' cannot start real-time threads (many tests will fail"
-    error "many tests will fail"
-  elif ((UserMaximumRTPriority<32)); then
-    error "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
-    error "many tests will fail"
-  elif ((RunningUnderLinux)); then
-    if ((UserMaximumRTPriority < 99)); then
-      warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority (Linux allows up to 99)"
+  UserMaximumRTPriority=$(ulimit -r)
+
+  whine() {
+    ((RunningUnderVM)) && warn "running under VM"
+    if ((RunningAsRoot)); then
+      :
+    elif ((UserMaximumRTPriority==0)); then
+      error "user '$USER' cannot start real-time threads"
+    elif ((UserMaximumRTPriority<32)); then
+      warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
+    elif ((UserMaximumRTPriority < 99 && RunningUnderLinux)); then
+      warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
     fi
-  fi
-  ((RunningUnderPREEMPT)) || {
-    warn "no PREEMPT_RT patches installed in kernel '$(uname -s)'"
-    warn "some tests will fail"
+    ((RunningUnderPREEMPT)) || {
+      warn "no PREEMPT_RT patches installed in kernel"
+    }
   }
 
   {
@@ -269,17 +272,18 @@ EOF
         # run tests N times
         #
         [0-9]*)
-          info "executing command '$Cmd' [$(date -R)]"
-          info "${CCStandards[@]} ${TestOptimizations[@]}"
-          if pushd $TestMarchDir >/dev/null; then
+          whine
+          chat "executing command '$Cmd' [$(date -R)]"
+          info "${Standards[@]} ${Optimizations[@]}"
+          if pushd $OutDir >/dev/null; then
             Summary=1
-            info "$TestCount tests => $TargetCount target(s) => $((Cmd * TargetCount)) total run(s)"
+            info "$TestsSize tests => $TargetsSize target(s) => $((Cmd * TargetsSize)) total run(s)"
             if ((optparallelize)); then
               #
               # Grouped
               #
               # TBD: group all variations of a test in one line and
-              #      execute parallely (this code is not working)
+              #      execute parallely (THIS CODE IS YET NOT WORKING)
               #
               declare -A chained
               for target in $(for x in ${!Targets[@]}; do echo $x; done | sort)
@@ -306,16 +310,16 @@ EOF
               #
               # Ungrouped
               #
-              # Run each executable in a separate line. If bad runs
-              # occured and shy mode is enabled stop the script.
+              # Current directory is $OutDir. Run each executable in a
+              # separate line. If bad runs occured and shy mode is
+              # enabled stop the script.
               #
               lno=1
               for t in $(for x in ${!Targets[@]}; do echo $x; done | sort)
               do
                 Good=0 Bad=0 Missing=0 exists=0 x=
-                t=$(basename $t)
                 [[ -x $t ]] && ((exists=1)) || x=' !! MISSING'
-                ((optquiet<=1)) && printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetCount "$t$x" $Cmd
+                ((optquiet<=1)) && printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetsSize "$t$x" $Cmd
                 for ext in stderr stdout stackdump; do
                   rm -f $t.$ext
                 done
@@ -354,7 +358,7 @@ EOF
           ((optquiet>=1)) && jiva+=' -q'
           ((optquiet==2)) && jiva+=' -q'
           ((optshy)) && jiva+=' -s'
-          [[ -n $TestFlavor ]] && jiva+=" -f $TestFlavor"
+          [[ -n $Flavor ]] && jiva+=" -f $Flavor"
           if $jiva build info; then
             for fn in ${fnno[@]}; do
               $Sudo $jiva $fn && CmdSuccess=1 || CmdSuccess=0
@@ -368,13 +372,8 @@ EOF
         # Compile all files on all optimization levels and try a few
         # runs.
         #
-        'test')
-          # same code as 'afk' only $jiva different
-          jiva="$0 -DOER -q -q"
-          ((optquiet>=1)) && jiva+=' -q'
-          ((optquiet==2)) && jiva+=' -q'
-          ((optshy)) && jiva+=' -s'
-          [[ -n $TestFlavor ]] && jiva+=" -f $TestFlavor"
+        'stress')
+          jiva="$0 -DOER -q -q -s"
           fnno=(0 1 1 2 3 5 8 12 21)
           if $jiva build info; then
             for fn in ${fnno[@]}; do
@@ -393,14 +392,16 @@ EOF
                # is gone
           ;;
         'realclean')
-          info "removing '$TestMarchDir'"
-          rm -rf $TestMarchDir && mkdir -pv $TestMarchDir || exit
+          info "removing '$OutDir'"
+          rm -rf $OutDir && mkdir -pv $OutDir || exit
           ;;
         'build'|'clean')
-          if ${Make[@]} -C $TestMarchDir $Cmd; then
+          info ${Make[@]} -f $Makefile $Cmd
+          if ${Make[@]} -f $Makefile $Cmd; then
             CmdSuccess=1
           else
             CmdSuccess=0
+            exit
           fi
           ;;
         *)
@@ -440,12 +441,13 @@ EOF
       else
         TotalGoodPercent='100.000'
       fi
-      cout "$TotalGoodPercent% ($TotalRuns runs = $TotalGood good + $TotalBad bad + $TotalMissing missing)"
+      info "$TotalGoodPercent% ($TotalRuns runs = $TotalGood good + $TotalBad bad + $TotalMissing missing)"
       case $TotalGoodPercent in
         100*)
           info "exit code 0"
           ;;
         *)
+          info "exit code 1"
           exit 1
           ;;
       esac
