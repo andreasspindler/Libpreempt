@@ -104,25 +104,28 @@ EOF
 
     find_tests() { find ${1:-$TestDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
     readcommit() { git -C ${1:-.} rev-parse --short ${2:-HEAD} || echo ''; }
-    ANSI_GRN="\033[1;92m" ANSI_DGR="\033[1;32m"
-    ANSI_YLW="\033[1;33m"
-    ANSI_RED="\033[1;91m" ANSI_DRD="\033[1;31m"
-    ANSI_OFF="\033[0m"
-    cout() { echo -e "### $(hostname) $TestTarget(${Flavor}) ***" "$@"; }
-    cerr() { cout "$@"; } >&2
-    info() { ((optquiet<1)) && cout "${ANSI_YLW}$@${ANSI_OFF}"; }
-    chat() { ((optquiet<2 && optverbose>0)) && cout "$@"; }
-    warn() { cerr "${ANSI_DGR}WARNING:${ANSI_GRN}" "$@" "$ANSI_OFF"; }
-    error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
-    die() { cerr "ERROR:" "$@"; exit 1; }
     {
       missing=()
       for x in $Sudo ${CC[0]} ${Make[0]}; do
         which $x 1>/dev/null 2>/dev/null || missing+=$x
       done
-      ((${#missing[@]})) && die "system not ready: missing ${missing[@]}"
+      ((${#missing[@]})) && {
+        echo "system not ready: missing ${missing[@]}"
+        exit 1
+      }
     }
   }
+  ANSI_GRN="\033[1;92m" ANSI_DGR="\033[1;32m"
+  ANSI_YLW="\033[1;33m"
+  ANSI_RED="\033[1;91m" ANSI_DRD="\033[1;31m"
+  ANSI_OFF="\033[0m"
+  cout() { echo -e "### $(hostname) $TestTarget(${Flavor}) ***" "$@"; }
+  cerr() { cout "$@"; } >&2
+  info() { ((optquiet<1)) && cout "${ANSI_YLW}$@${ANSI_OFF}"; }
+  chat() { ((optquiet<2 && optverbose>0)) && cout "$@"; }
+  warn() { cerr "${ANSI_DGR}WARNING:${ANSI_GRN}" "$@" "$ANSI_OFF"; }
+  error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
+  die() { cerr "ERROR:" "$@"; exit 1; }
 
   ##############################################
   # populate array Tests

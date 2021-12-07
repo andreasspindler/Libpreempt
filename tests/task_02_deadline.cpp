@@ -1,7 +1,6 @@
 /* -*- coding: raw-text-unix; -*-
  *
- * Find out execution time of realtime threads. Fail if such a exceeds
- * its time slice. Print runtime and idle time information per thread.
+ * Find out execution time of realtime threads.
  */
 #include "common.h"
 
@@ -9,6 +8,8 @@ using namespace std;
 
 /**
  * Thread that sleeps 3ms on each invocation.
+ *
+ * Fails if run() runs longer than 10ms.
  */
 class SleepFor3ms : public CriticalTask<10> {
 public:

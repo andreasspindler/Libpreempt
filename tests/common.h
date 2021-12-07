@@ -31,8 +31,8 @@ public:
   void start(int priority = 1);
 
   /**
-   * Actual thread function. May not consume more than Ms milliseconds
-   * or a base::deadline_error is thrown.
+   * Actual thread function. May not consume more than Ms milliseconds or the
+   * process terminates.
    */
   virtual void run() = 0;
 

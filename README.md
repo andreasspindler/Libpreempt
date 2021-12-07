@@ -31,43 +31,66 @@ Example:
  > git clone https://github.com/andreasspindler/Libpreempt
  > cd Libpreempt
  > sudo make
-[sudo] password for jiva: 
-./pudding.sh -D build 100
+./pudding.sh -DR build 100
+### multivm Libpreempt(all) *** make -S -j4 -f multivm-all.mak build
+make[1]: Entering directory '/media/sf_H_DRIVE/shastras/Libpreempt'
+g++ -pthread -D_GNU_SOURCE -fmax-errors=5 -std=c++17 -DNDEBUG -Werror -Iinclude -o out/multivm-all/base_01_thread.c++17.release tests/base_01_thread.cpp src/base.cpp src/process.cpp
+g++ -pthread -D_GNU_SOURCE -fmax-errors=5 -std=c++14 -DNDEBUG -Werror -Iinclude -o out/multivm-all/preempt_02_fifo.c++14.release tests/preempt_02_fifo.cpp src/base.cpp src/process.cpp
+make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt'
 ### multivm Libpreempt(all) *** WARNING: running under VM 
-### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 'Linux' 
-### multivm Libpreempt(all) *** WARNING: some tests will fail 
-make[1]: Entering directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-all'
-make[1]: Nothing to be done for 'build'.
-make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt/out/multivm-all'
-### multivm Libpreempt(all) *** executing command '100' [Sat, 04 Dec 2021 18:56:43 +0100]
-### multivm Libpreempt(all) *** c++14 c++17 debug
-### multivm Libpreempt(all) *** 12 tests => 24 target(s) => 2400 total run(s)
-#   1/  24: base_01_thread.c++14.debug                      100 run(s)          0 bad        100 good
-#   2/  24: base_01_thread.c++17.debug                      100 run(s)          0 bad        100 good
-#   3/  24: preempt_01_self.c++14.debug                     100 run(s)          0 bad        100 good
-#   4/  24: preempt_01_self.c++17.debug                     100 run(s)          0 bad        100 good
-#   5/  24: preempt_02_fifo.c++14.debug                     100 run(s)          0 bad        100 good
-#   6/  24: preempt_02_fifo.c++17.debug                     100 run(s)          0 bad        100 good
-#   7/  24: preempt_03_decrement.c++14.debug                100 run(s)         15 bad         85 good
-#   8/  24: preempt_03_decrement.c++17.debug                100 run(s) 	        20 bad         80 good
-#   9/  24: preempt_04_thread.c++14.debug                   100 run(s)          0 bad        100 good
-#  10/  24: preempt_04_thread.c++17.debug                   100 run(s)          0 bad        100 good
-#  11/  24: std_01_self.c++14.debug                         100 run(s)          0 bad        100 good
-#  12/  24: std_01_self.c++17.debug                         100 run(s)          0 bad        100 good
-#  13/  24: std_01_thread.c++14.debug                       100 run(s)          0 bad        100 good
-#  14/  24: std_01_thread.c++17.debug                       100 run(s)          0 bad        100 good
-#  15/  24: std_02_nonstatic.c++14.debug                    100 run(s)          0 bad        100 good
-#  16/  24: std_02_nonstatic.c++17.debug                    100 run(s)          0 bad        100 good
-#  17/  24: std_03_array.c++14.debug                        100 run(s)          0 bad        100 good
-#  18/  24: std_03_array.c++17.debug                        100 run(s)          0 bad        100 good
-#  19/  24: std_04_lambda.c++14.debug                       100 run(s)          0 bad        100 good
-#  20/  24: std_04_lambda.c++17.debug                       100 run(s)          0 bad        100 good
-#  21/  24: task_01_monopoly.c++14.debug                    100 run(s)          0 bad        100 good
-#  22/  24: task_01_monopoly.c++17.debug                    100 run(s)          0 bad        100 good
-#  23/  24: task_02_clock.c++14.debug                       100 run(s)          1 bad         99 good
-#  24/  24: task_02_clock.c++17.debug                       100 run(s)          3 bad         97 good
-### multivm Libpreempt(all) *** 98.300% (2400 runs = 2361 good + 39 bad + 0 missing)
-make: *** [Makefile:8: all] Error 1
+### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 
+### multivm Libpreempt(all) *** c++14 c++17 debug release
+### multivm Libpreempt(all) *** 12 tests => 48 target(s) => 4800 total run(s)
+#   1/  48: base_01_thread.c++14.debug                      100 run(s)          0 bad        100 good
+#   2/  48: base_01_thread.c++14.release                    100 run(s)          0 bad        100 good
+#   3/  48: base_01_thread.c++17.debug                      100 run(s)          0 bad        100 good
+#   4/  48: base_01_thread.c++17.release                    100 run(s)          0 bad        100 good
+#   5/  48: preempt_01_self.c++14.debug                     100 run(s)          0 bad        100 good
+#   6/  48: preempt_01_self.c++14.release                   100 run(s)          0 bad        100 good
+#   7/  48: preempt_01_self.c++17.debug                     100 run(s)          0 bad        100 good
+#   8/  48: preempt_01_self.c++17.release                   100 run(s)          0 bad        100 good
+#   9/  48: preempt_02_fifo.c++14.debug                     100 run(s)          0 bad        100 good
+#  10/  48: preempt_02_fifo.c++14.release                   100 run(s)          0 bad        100 good
+#  11/  48: preempt_02_fifo.c++17.debug                     100 run(s)          0 bad        100 good
+#  12/  48: preempt_02_fifo.c++17.release                   100 run(s)          0 bad        100 good
+#  13/  48: preempt_03_decrement.c++14.debug                100 run(s)          0 bad        100 good
+#  14/  48: preempt_03_decrement.c++14.release              100 run(s)          0 bad        100 good
+#  15/  48: preempt_03_decrement.c++17.debug                100 run(s)          0 bad        100 good
+#  16/  48: preempt_03_decrement.c++17.release              100 run(s)          0 bad        100 good
+#  17/  48: preempt_04_thread.c++14.debug                   100 run(s)          0 bad        100 good
+#  18/  48: preempt_04_thread.c++14.release                 100 run(s)          0 bad        100 good
+#  19/  48: preempt_04_thread.c++17.debug                   100 run(s)          0 bad        100 good
+#  20/  48: preempt_04_thread.c++17.release                 100 run(s)          0 bad        100 good
+#  21/  48: std_01_thread.c++14.debug                       100 run(s)          0 bad        100 good
+#  22/  48: std_01_thread.c++14.release                     100 run(s)          0 bad        100 good
+#  23/  48: std_01_thread.c++17.debug                       100 run(s)          0 bad        100 good
+#  24/  48: std_01_thread.c++17.release                     100 run(s)          0 bad        100 good
+#  25/  48: std_02_nonstatic.c++14.debug                    100 run(s)          0 bad        100 good
+#  26/  48: std_02_nonstatic.c++14.release                  100 run(s)          0 bad        100 good
+#  27/  48: std_02_nonstatic.c++17.debug                    100 run(s)          0 bad        100 good
+#  28/  48: std_02_nonstatic.c++17.release                  100 run(s)          0 bad        100 good
+#  29/  48: std_03_array.c++14.debug                        100 run(s)          0 bad        100 good
+#  30/  48: std_03_array.c++14.release                      100 run(s)          0 bad        100 good
+#  31/  48: std_03_array.c++17.debug                        100 run(s)          0 bad        100 good
+#  32/  48: std_03_array.c++17.release                      100 run(s)          0 bad        100 good
+#  33/  48: std_04_lambda.c++14.debug                       100 run(s)          0 bad        100 good
+#  34/  48: std_04_lambda.c++14.release                     100 run(s)          0 bad        100 good
+#  35/  48: std_04_lambda.c++17.debug                       100 run(s)          0 bad        100 good
+#  36/  48: std_04_lambda.c++17.release                     100 run(s)          0 bad        100 good
+#  37/  48: task_01_monopoly.c++14.debug                    100 run(s)          0 bad        100 good
+#  38/  48: task_01_monopoly.c++14.release                  100 run(s)          0 bad        100 good
+#  39/  48: task_01_monopoly.c++17.debug                    100 run(s)          0 bad        100 good
+#  40/  48: task_01_monopoly.c++17.release                  100 run(s)          0 bad        100 good
+#  41/  48: task_02_deadline.c++14.debug                    100 run(s)          1 bad         99 good
+#  42/  48: task_02_deadline.c++14.release                  100 run(s)          2 bad         98 good
+#  43/  48: task_02_deadline.c++17.debug                    100 run(s)          1 bad         99 good
+#  44/  48: task_02_deadline.c++17.release                  100 run(s)          1 bad         99 good
+#  45/  48: task_03_sort.c++14.debug                        100 run(s)          0 bad        100 good
+#  46/  48: task_03_sort.c++14.release                      100 run(s)          0 bad        100 good
+#  47/  48: task_03_sort.c++17.debug                        100 run(s)          0 bad        100 good
+#  48/  48: task_03_sort.c++17.release                      100 run(s)          0 bad        100 good
+### multivm Libpreempt(all) *** 99.800% (4800 runs = 4795 good + 5 bad + 0 missing)
+### multivm Libpreempt(all) *** exit code 1
 ```
 
 First the script compiles a matrix of executables for each single test. Each

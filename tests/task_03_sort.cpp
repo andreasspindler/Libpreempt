@@ -2,8 +2,8 @@
  *
  * Find out execution time of realtime threads.
  *
- * Run threads that generate and sort a random integer vector within a
- * given number of milliseconds, or fail.
+ * In each thred generate and sort a random integer vector within a given number
+ * of milliseconds, or fail.
  */
 #include "common.h"
 
