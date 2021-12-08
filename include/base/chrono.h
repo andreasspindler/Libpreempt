@@ -19,11 +19,20 @@ namespace base {
  *     auto usec2 = sw.elapsed();
  *      .
  *      .
+ *     auto usec3 = sw.stop(); // get elapsed + reset
+ *      .
+ *      .
  */
 class stopwatch {
 public:
+  using clock_type = std::chrono::high_resolution_clock;
+  using time_point = std::chrono::time_point<clock_type>;
+
   /** Set time. */
   stopwatch();
+
+  /** Get time of construction. */
+  time_point start() const;
 
   /** Get elapsed seconds so far. */
   long seconds() const;
@@ -31,19 +40,20 @@ public:
   /** Get elapsed milliseconds so far. */
   long milliseconds() const;
 
-  /** Get elapsed time so far in microseconds. */
+  /** Get elapsed time in microseconds so far. */
   long microseconds() const;
 
-  /** Get elapsed time in microseconds. */
-  double stop() const;
+  /** Get elapsed time in nanoseconds so far. */
+  long nanoseconds() const;
+
+  /** Get elapsed time in microseconds, then reset to current time. */
+  long stop();
 
 private:
   template <typename T>
   long cast() const;
 
-  using clock_type = std::chrono::high_resolution_clock;
-
-  std::chrono::time_point<clock_type> const t0_;
+  time_point t0_;
 };
 
 /**
@@ -52,20 +62,21 @@ private:
  * Example:
  *
  *   void f() {
- *     base::timeout t {300};
+ *     base::timeout timeout {300};
  *      .
  *      .
- *     if (t.reached()) {
+ *     if (timeout) {
  *       // timeout reached
  *     }
  *
  */
-class timeout
-{
+class timeout {
 public:
-  timeout(long ms = 0);
+  /** Define timeout from now plus us microseconds. */
+  timeout(long us = 0);
 
   bool reached() const;
+
   operator bool() const;
 
 private:
@@ -76,14 +87,22 @@ private:
  * inlined implementation
  */
 inline
-stopwatch::stopwatch()
-  : t0_ {clock_type::now()} { }
+stopwatch::stopwatch() {
+  stop();
+}
 
 inline
-double
-stopwatch::stop() const {
-  std::chrono::duration<double, std::micro> const us = clock_type::now() - t0_;
-  return us.count();
+stopwatch::time_point
+stopwatch::start() const {
+  return t0_;
+}
+
+inline
+long
+stopwatch::stop() {
+  long result = microseconds();
+  t0_ = clock_type::now();
+  return result;
 }
 
 template <typename T>
@@ -111,9 +130,14 @@ stopwatch::microseconds() const {
 }
 
 inline
-timeout::timeout(long ms)
-  : t1_ {std::chrono::system_clock::now() +
-         std::chrono::milliseconds {ms}} { }
+long
+stopwatch::nanoseconds() const {
+  return cast<std::chrono::nanoseconds>();
+}
+
+inline
+timeout::timeout(long us)
+  : t1_ {std::chrono::system_clock::now() + std::chrono::microseconds {us}} { }
 
 inline
 bool
@@ -121,7 +145,6 @@ timeout::reached() const {
   return std::chrono::system_clock::now() >= t1_;
 }
 
-inline
 timeout::operator bool() const {
   return reached();
 }

@@ -48,7 +48,7 @@ void breakpoint(bool unconditional = true);
  *
  * std::quick_exit() will not destruct global/static objects including
  * thread objects. This is bad because the thread dtor will call
- * std::terminate) if the thread is unjoined.
+ * std::terminate() if the thread is unjoined.
  *
  * Solution: in multi-threaded programs use base::terminate() to leave
  * ctors/dtors unconditionally and base::quick_exit() otherwise.

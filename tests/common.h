@@ -66,6 +66,7 @@ template <int Ms>
 void
 CriticalTask<Ms>::hook()
 {
+  // TODO: use base::timeout()
   using namespace std;
   using namespace std::chrono;
   auto start = clock::now();
@@ -73,10 +74,10 @@ CriticalTask<Ms>::hook()
   { run(); }
   auto stop = clock::now();
   if (stop > deadline) {
-    base::terminate("CriticalTask: deadline error");
+    base::quick_exit("CriticalTask: deadline error");
   } else {
     auto us = duration_cast<microseconds>(stop - start);
-    usec_ = us.count();
+    usec_ = us.count();         // just store last duration
   }
 }
 
