@@ -19,7 +19,7 @@
   CC=(g++ -pthread -D_GNU_SOURCE)
   Standards=(c++14 c++17)
   Optimizations=()
-  Make=(make -S -j$(($(nproc) * 1)))
+  Make=(make -j$(($(nproc) * 1)))
   Sudo=''
   {
     usage() {
@@ -137,9 +137,13 @@ EOF
       Tests=($(find_tests $TestDir))
       ;;
   esac
-  TestsSize=${#Tests[@]}
 
   [[ ! -f .puddingrc ]] || source .puddingrc || die 'bad .puddingrc'
+  TestsSize=${#Tests[@]}
+
+  ((${#Optimizations[@]})) || Optimizations=('default')
+  info "$(uname -srm) ($(${CC[0]} --version | head -1))"
+  info "${Standards[@]} ${Optimizations[@]}"
 
   ##############################################
   # populate array Targets
@@ -156,8 +160,6 @@ EOF
       echo -n "$(basename $cpptest .cpp).$std.$opt"
     }
 
-    ((${#Optimizations[@]})) || Optimizations=('default')
-    info "${Standards[@]} ${Optimizations[@]}"
 
     for Optimization in ${Optimizations[@]}; do
       Flags=()
@@ -178,13 +180,13 @@ EOF
       done
     done
     TargetsSize=${#Targets[@]}
+    info "$TestsSize tests => $TargetsSize targets"
   }
 
   ##############################################
   # create Makefile
   #
   {
-    info "$TestsSize tests => $TargetsSize targets"
     Makefile="${March}.mak"
     chat "$Makefile => $OutDir/"
     mkdir -p $OutDir

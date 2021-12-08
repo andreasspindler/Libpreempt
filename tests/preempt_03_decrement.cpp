@@ -1,14 +1,16 @@
 /*
  * SCHED_FIFO threads with different priorities
  *
- * Runs threads under SCHED_FIFO realtime policy with different priorities. Each
- * threads decrement an unguarded global integer. Before doing this it expects a
- * certain value so that the order in which realtime threads are scheduled is
- * strictly checked.
+ * Strictly check the order in whcih SCHED_FIFO threads are scheduled.
  *
- * Note that the decrement operation is neither atomic nor implemented using a
- * lock. This is unnecessary as long as the threads were started with the same
- * or a lower priority than the last FIFO thread.
+ * Runs threads under SCHED_FIFO realtime policy with different priorities. Each
+ * threads:
+ *  - read global integer and fail unless it has a certain value
+ *  - decrement the integer
+ *
+ * The decrement operation is neither atomic nor implemented using a lock. This
+ * is unnecessary as long as the threads were started with the same or a lower
+ * priority than the last FIFO thread.
  */
 #include <preempt/process.h>
 #include <base/pthread.h>
@@ -17,7 +19,6 @@
 #include <cstdlib>
 #include <memory>
 #include <vector>
-//#include <iostream>
 
 using namespace std;
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
 {
   preempt::this_process::begin_realtime();
 
-  // FIFO: decreasing or equal priorities (only higher than 0 allowed)
+  // FIFO: decreasing or equal priorities
   { int tab[] = {  1,  1,  1 }; run<SCHED_FIFO>(tab); }
   { int tab[] = { 10, 10, 10 }; run<SCHED_FIFO>(tab); }
   { int tab[] = { 30, 20, 10 }; run<SCHED_FIFO>(tab); }
@@ -50,7 +51,8 @@ int main(int argc, char *argv[])
   return EXIT_SUCCESS;
 }
 
-void* decrement(void *expected)
+void*
+decrement(void *expected)
 {
   VERIFY(global_value == *(int*)(expected));
   global_value--;

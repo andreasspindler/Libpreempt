@@ -19,7 +19,8 @@ rebuild: clean; $(PUDDING) -D build
 # maintainer targets
 #
 stress: clean; $(PUDDING) -DOPER $@
-parinama: clean; $(PUDDING) -f$@ -s -DR build # 10
+parinama: clean; $(PUDDING) -f$@ -s -DR build 10
+f1 p3: clean; $(PUDDING) -f$@ -s -DR build 10
 
 clean: TAGS
 	$(PUDDING) clean

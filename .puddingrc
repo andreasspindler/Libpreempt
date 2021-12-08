@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 # -*-coding:raw-text-unix;-*-
 #
@@ -23,7 +22,15 @@ in
   parinama)                     # Sanskrit: development, change
     Tests=($(find_tests $TestDir 'task_*.cpp'))
     Standards=(c++17)
-    Make=(make -S -j1)
+    Make=(make -j1)
     CC+=(-fmax-errors=3)
+    ;;
+  p3)
+    Tests=($(find_tests $TestDir 'preempt_03*.cpp'))
+    #Standards=(c++14)
+    ;;
+  f1)
+    Tests=($(find_tests $TestDir 'firmware_01*.cpp'))
+    Standards=(c++14 c++17)
     ;;
 esac
