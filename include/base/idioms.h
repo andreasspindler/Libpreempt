@@ -1,12 +1,12 @@
 /* -*-coding:raw-text-unix-*-
  *
- * base/idioms.h
+ * base/idioms.h -- common C++ idioms
  */
 #pragma once
 
 #include <mutex>
 
-#include <base/macros.h>
+#include <base/utility.h>     // BASE_STD_GUARD
 
 namespace base {
 /**

@@ -22,8 +22,8 @@ parinama:;			./pudding.sh -f$@ -s -DR build # 10
 
 clean:
 	./pudding.sh clean
-realclean:
-	rm -f TAGS a.out
+	rm -f *.mak a.out
+realclean: clean
 	rm -rf out
 	find -name '.#-emacs*' -delete
 	git gc

@@ -4,13 +4,11 @@
  */
 #pragma once
 
-#include <thread>
-#include <mutex>
 #include <chrono>
 #include <ctime>
 #include <iostream>
 
-#include <base/macros.h>
+#include <base/utility.h>
 
 namespace base {
 /**
@@ -46,17 +44,16 @@ trace(char const* fmt, ...) {
 (void) ((!!(expr)) || (base::trace("Expression is false: ", #expr, __FILE__, __LINE__), 0))
 
 /**
- * Print to stdout if BASE_LOGGING is defined.
+ * Stream to stderr with timestamp and mutex-protection.
  */
-#define LOG_COUT(streamargs) LOG_IMPL(std::cout, (streamargs))
+#define BASE_LOG_COUT(streamargs) BASE_LOG_IMPL(std::cout, (streamargs))
 
 /**
- * Print to stderr if BASE_LOGGING is defined.
+ * Stream to stderr with timestamp and mutex-protection.
  */
-#define LOG_CERR(streamargs) LOG_IMPL(std::cerr, (streamargs))
+#define BASE_LOG_CERR(streamargs) BASE_LOG_IMPL(std::cerr, (streamargs))
 
-#ifdef BASE_LOGGING
-#define LOG_IMPL(stream, streamargs)                                    \
+#define BASE_LOG_IMPL(stream, streamargs)                               \
 do {                                                                    \
   auto const t = std::chrono::system_clock::now();                      \
   auto const ttm = std::chrono::system_clock::to_time_t(t);             \
@@ -69,7 +66,4 @@ do {                                                                    \
             << __FILE__ << ":" << __LINE__ << "   " << streamargs       \
             << std::endl;                                               \
  } while ((0))
-#else
-#define LOG_IMPL(stream, streamargs) (void) 0
-#endif // BASE_LOGGING
 } /* base */

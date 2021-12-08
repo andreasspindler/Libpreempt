@@ -11,5 +11,6 @@
 #include <base/posix.h>
 #include <base/pthread.h>
 #include <base/string.h>
-#include <base/testing.h>
 #include <base/trace.h>
+#include <base/utility.h>
+

@@ -4,8 +4,8 @@
 #include <chrono>
 #include <iostream>
 
-#include <base/testing.h>
 #include <base/idioms.h>
+#include <base/utility.h>
 
 #include <preempt/task.h>
 
