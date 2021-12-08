@@ -16,7 +16,7 @@
   TestDir='tests'
   TestOutDir="out"
   Flavor='all'
-  CC=(g++ -pthread -D_GNU_SOURCE -fmax-errors=5)
+  CC=(g++ -pthread -D_GNU_SOURCE)
   Standards=(c++14 c++17)
   Optimizations=()
   Make=(make -S -j$(($(nproc) * 1)))
@@ -157,6 +157,7 @@ EOF
     }
 
     ((${#Optimizations[@]})) || Optimizations=('default')
+    info "${Standards[@]} ${Optimizations[@]}"
 
     for Optimization in ${Optimizations[@]}; do
       Flags=()
@@ -177,13 +178,13 @@ EOF
       done
     done
     TargetsSize=${#Targets[@]}
-    #info ${!Targets[@]}; exit
   }
 
   ##############################################
   # create Makefile
   #
   {
+    info "$TestsSize tests => $TargetsSize targets"
     Makefile="${March}.mak"
     chat "$Makefile => $OutDir/"
     mkdir -p $OutDir
@@ -192,7 +193,6 @@ EOF
     for Target in "${!Targets[@]}"; do
       x+=("$OutDir/$Target")
     done
-
     cat >$Makefile <<EOF
 # -*- mode:makefile; eval:(auto-revert-mode); -*-
 #
@@ -203,7 +203,6 @@ EOF
 
 build: ${x[@]}
 EOF
-
 
     for Target in "${!Targets[@]}"; do
       Test=${Targets[$Target]}
@@ -239,28 +238,12 @@ EOF
   esac
 
   UserMaximumRTPriority=$(ulimit -r)
-
-  whine() {
-    ((RunningUnderVM)) && warn "running under VM"
-    if ((RunningAsRoot)); then
-      :
-    elif ((UserMaximumRTPriority==0)); then
-      error "user '$USER' cannot start real-time threads"
-    elif ((UserMaximumRTPriority<32)); then
-      warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
-    elif ((UserMaximumRTPriority < 99 && RunningUnderLinux)); then
-      warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
-    fi
-    ((RunningUnderPREEMPT)) || {
-      warn "no PREEMPT_RT patches installed in kernel"
-    }
-  }
-
   {
     Summary=0 TotalRuns=0 TotalGood=0 TotalBad=0 TotalMissing=0
     for Cmd in ${Cmds[@]}; do
       CmdSuccess=1
       BgPids=()
+      chat "executing command '$Cmd' [$(date -R)]"
       case $Cmd in
         ########################################
         # list all tests
@@ -275,12 +258,21 @@ EOF
         # run tests N times
         #
         [0-9]*)
-          whine
-          chat "executing command '$Cmd' [$(date -R)]"
-          info "${Standards[@]} ${Optimizations[@]}"
           if pushd $OutDir >/dev/null; then
             Summary=1
-            info "$TestsSize tests => $TargetsSize target(s) => $((Cmd * TargetsSize)) total run(s)"
+            info "$TestsSize tests => $TargetsSize targets => $((Cmd * TargetsSize)) runs"
+            ((RunningUnderVM)) && warn "running under VM"
+            ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel"
+            if ((RunningAsRoot)); then
+              :
+            elif ((UserMaximumRTPriority==0)); then
+              error "user '$USER' cannot start real-time threads"
+            elif ((UserMaximumRTPriority<32)); then
+              warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
+            elif ((UserMaximumRTPriority < 99 && RunningUnderLinux)); then
+              warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
+            fi
+
             if ((optparallelize)); then
               #
               # Grouped

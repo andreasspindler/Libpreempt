@@ -5,26 +5,28 @@
 #
 .PHONY: all quick build refresh real clean realclean
 
+PUDDING=./pudding.sh
+
 #
 # common targets
 #
-all:;	./pudding.sh -DR build 100
-quick:;	./pudding.sh -DR build 10
-build:  ./pudding.sh -DR build
-rebuild: clean TAGS;
-	./pudding.sh -D build
+all:; $(PUDDING) -DR build 100
+quick:; $(PUDDING) -DR build 10
+build:; $(PUDDING) -DR build
+rebuild: clean; $(PUDDING) -D build
 
 #
 # maintainer targets
 #
-stress: rebuild;	./pudding.sh -DOPER $@
-parinama:;			./pudding.sh -f$@ -s -DR build # 10
+stress: clean; $(PUDDING) -DOPER $@
+parinama: clean; $(PUDDING) -f$@ -s -DR build # 10
 
-clean:
-	./pudding.sh clean
+clean: TAGS
+	$(PUDDING) clean
 	rm -f *.mak a.out
 realclean: clean
 	rm -rf out
+	rm -f TAGS
 	find -name '.#-emacs*' -delete
 	git gc
 FORCE:
