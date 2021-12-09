@@ -3,7 +3,35 @@
 
 #include <chrono>
 
+#include <base/numeric.h>
+
 namespace base {
+/**
+ * Convert integer to nanoseconds and back
+ *
+ * double represents passed time in form of fractions of seconds or
+ * microseconds.
+ *
+ * nsec_t is an integral type since there are no fractions of nanoseconds.
+ */
+typedef int64_t nsec_t;
+
+nsec_t sec_to_nsec( double);
+double sec_to_usec( double);
+double sec_to_msec( double);
+
+double msec_to_sec( double);
+double msec_to_usec(double);
+nsec_t msec_to_nsec(double);
+
+double usec_to_sec( double);
+double usec_to_msec(double);
+nsec_t usec_to_nsec(double);
+
+double nsec_to_sec( nsec_t);
+double nsec_to_msec(nsec_t);
+double nsec_to_usec(nsec_t);
+
 /**
  * Get elapsed time.
  *
@@ -86,6 +114,22 @@ private:
 /***********************************************************************
  * inlined implementation
  */
+inline nsec_t sec_to_nsec( double n) { return round_to_nearest<nsec_t>(n * 1e9); }
+inline double sec_to_msec( double n) { return n * 1e3; }
+inline double sec_to_usec( double n) { return n * 1e6; }
+
+inline nsec_t msec_to_nsec(double n) { return round_to_nearest<nsec_t>(n * 1e6); }
+inline double msec_to_sec( double n) { return n / 1e3; }
+inline double msec_to_usec(double n) { return n * 1e3; }
+
+inline nsec_t usec_to_nsec(double n) { return round_to_nearest<nsec_t>(n * 1e3); }
+inline double usec_to_sec( double n) { return n / 1e6; }
+inline double usec_to_msec(double n) { return n / 1e3; }
+
+inline double nsec_to_sec( nsec_t n) { return n / 1e9; }
+inline double nsec_to_msec(nsec_t n) { return n / 1e6; }
+inline double nsec_to_usec(nsec_t n) { return n / 1e3; }
+
 inline
 stopwatch::stopwatch() {
   stop();
@@ -145,6 +189,7 @@ timeout::reached() const {
   return std::chrono::system_clock::now() >= t1_;
 }
 
+inline
 timeout::operator bool() const {
   return reached();
 }
