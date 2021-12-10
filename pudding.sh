@@ -279,8 +279,10 @@ EOF
               #
               # Grouped
               #
+              # THIS CODE IS NOT YET WORKING
+              #
               # TBD: group all variations of a test in one line and
-              #      execute parallely (THIS CODE IS YET NOT WORKING)
+              #      execute parallely
               #
               declare -A chained
               for target in $(for x in ${!Targets[@]}; do echo $x; done | sort)
@@ -316,25 +318,29 @@ EOF
               do
                 Good=0 Bad=0 Missing=0 exists=0 x=
                 [[ -x $t ]] && ((exists=1)) || x=' !! MISSING'
-                ((optquiet<=1)) && printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetsSize "$t$x" $Cmd
+                ((optquiet<2)) && printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetsSize "$t$x" $Cmd
                 for ext in stderr stdout stackdump; do
                   rm -f $t.$ext
                 done
                 for i in $(seq 1 $Cmd); do
                   if ((exists)); then
-                    #BgPids+=($!)
+                    cout "run $i/$Cmd" >>$t.stdout
+                    cout "run $i/$Cmd" >>$t.stderr
                     if ($Sudo ./$t) 2>>$t.stderr | tee -a $t.stdout; then
                       test ${PIPESTATUS[0]} -eq 0 && ((Good++))
+                      echo "exit code 0" >>$t.stderr
+                    else
+                      echo "exit code ${PIPESTATUS[0]}" >>$t.stderr
                     fi
                   else
                     ((Missing++))
                   fi
                 done
                 for ext in stderr stdout stackdump; do
-                  [[ -s $t.$ext ]] || rm -f $t.$ext # remove if empty
+                  [[ -s $t.$ext ]] || rm -f $t.${ext} # remove if empty
                 done
                 Bad=$((Cmd - Good - Missing))
-                ((optquiet<=1)) && printf "% 10u bad % 10u good\n" $Bad $Good
+                ((optquiet<2)) && printf "% 10u bad % 10u good\n" $Bad $Good
                 ((TotalRuns+=Cmd)); ((TotalGood+=Good)); ((TotalBad+=Bad)); ((TotalMissing+=Missing))
                 if ((optshy && TotalBad)); then
                   die "bailing out"
