@@ -19,6 +19,8 @@ in
   sched)
     Tests=($(find_tests $InDir 'sched_*.cpp'))
     ;;
+  stress)
+    ;;
   parinama)                     # Sanskrit: development, change
     Tests=($(find_tests $InDir 'task_03*.cpp'))
     Standards=(c++17)

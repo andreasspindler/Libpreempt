@@ -1,7 +1,7 @@
 /* -*- coding: raw-text-unix; -*-
  *
- * Basic POSIX thread. Runs threads under SCHED_OTHER default policy
- * (non-realtime, unprioritized).
+ * Base library self tests.
+ *
  */
 #include <base/all.h>
 
@@ -15,6 +15,10 @@ void* thread_function(void* arg) {
 
 int main(int argc, char *argv[])
 {
+  /*
+   * Basic POSIX thread. Runs threads under SCHED_OTHER default policy
+   * (non-realtime, unprioritized).
+   */
   char argument[] = X;
 
   /* thread_function1 */

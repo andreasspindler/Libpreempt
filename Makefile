@@ -3,9 +3,6 @@
 # Compile: make quick
 # Compile: make parinama
 #
-# 1. chrono
-# 2. selbststests base_01_self
-#
 .PHONY: all quick build refresh real clean realclean
 
 PUDDING=./pudding.sh
@@ -13,17 +10,16 @@ PUDDING=./pudding.sh
 #
 # common targets
 #
-all:; $(PUDDING) -DR build 100
-quick:; $(PUDDING) -DR build 10
-build:; $(PUDDING) -DR build
-rebuild: clean; $(PUDDING) -D build
+all:; $(PUDDING) -DR 100
+quick:; $(PUDDING) -DR 10
+build:; $(PUDDING) -DR
+rebuild: clean; $(PUDDING) -DR
 
-#
 # maintainer targets
 #
-stress: clean; $(PUDDING) -DOPER $@
-parinama:; $(PUDDING) -f$@ -s -DR clean build 100
-f1 p3: clean; $(PUDDING) -f$@ -s -DR build 10
+stress afk:; $(PUDDING) -f$@ -DOPER $@
+parinama:; $(PUDDING) -f$@ -s -DR clean 100
+f1 p3: clean; $(PUDDING) -f$@ -s -D 10
 
 clean: TAGS
 	$(PUDDING) clean

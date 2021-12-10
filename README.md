@@ -20,17 +20,16 @@ Components:
 
 The C++ framework was not developed on a theoretical basis but on the basis of
 concrete, practical "real-time" and "embedded" questions and scenarios. These
-can be found in the form of individual files in the *tests/* subdirectory.
+can be found in the form of individual files in the *tests/* sub-directory.
 
-All tests can be started very easily by cloning the repository and running
-`make`.
+To run these tests clone the repository and run `make`.
 
 Example:
 
 ``` sh
  > git clone https://github.com/andreasspindler/Libpreempt
  > cd Libpreempt
- > sudo make quick
+ > sudo make
 ./pudding.sh -DR build 10
 ### multivm Libpreempt(all) *** c++14 c++17 debug release
 ### multivm Libpreempt(all) *** 12 tests => 48 targets
@@ -94,11 +93,11 @@ make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt'
 ### multivm Libpreempt(all) *** exit code 1
 ```
 
-First the script compiles a matrix of executables for each single test. Each
-test is stretched over different C++ standards, optimization levels and
+First the script compiles a matrix of executables for each single test where
+each test is stretched over different C++ standards, optimization levels and
 (optionally) CPU micro-architecures. In this way it compiles many executable
-files for each single C++ file. Second, the script runs all executables
-repeatedly and summarizes results based on exit codes.
+files for each single C++ file. Second, the script runs all tests repeatedly and
+summarizes results based on exit codes.
 
 Make is prefixed `sudo` because unless the user has **scheduling privileges**
 executing programs that use one of the real-time scheduling policies will fail

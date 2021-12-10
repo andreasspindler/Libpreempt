@@ -29,6 +29,7 @@ gdb*
 \#steinbruch/
 out/
 *.mak
+*-report.md
 *.stderr
 *.stdout
 _*

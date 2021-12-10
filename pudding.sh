@@ -99,7 +99,8 @@ EOF
       esac
     done
     shift $((OPTIND-1))
-    (($#)) && Cmds=("$@") || Cmds=()
+    Cmds=('build')
+    (($#)) && Cmds+=("$@") || Cmds+=()
     March=$(hostname)-$Flavor
     OutDir="$OutDir/$March"
 
@@ -126,19 +127,14 @@ EOF
   chat() { ((optquiet<2 && optverbose>0)) && cout "$@"; }
   warn() { cerr "${ANSI_DGR}WARNING:${ANSI_GRN}" "$@" "$ANSI_OFF"; }
   error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
-  die() { cerr "ERROR:" "$@"; exit 1; }
+  die() { error "$@"; exit 1; }
 
   ##############################################
   # populate array Tests
   #
   # source .puddingrc and complete global variables
   #
-  case $Flavor in
-    ''|all|thorough)
-      Tests=($(find_tests $InDir))
-      ;;
-  esac
-
+  Tests=($(find_tests $InDir))
   [[ ! -f .puddingrc ]] || source .puddingrc || die 'bad .puddingrc'
   TestsSize=${#Tests[@]}
 
@@ -161,7 +157,6 @@ EOF
       echo -n "$(basename $cpptest .cpp).$std.$opt"
     }
 
-
     for Optimization in ${Optimizations[@]}; do
       Flags=()
       case $Optimization in
@@ -181,13 +176,14 @@ EOF
       done
     done
     TargetsSize=${#Targets[@]}
-    info "$TestsSize tests => $TargetsSize targets"
+    info "$TestsSize tests => $TargetsSize executables"
   }
 
   ##############################################
   # create Makefile
   #
   {
+    Pwd=$(pwd)
     Makefile="${March}.mak"
     chat "$Makefile => $OutDir/"
     mkdir -p $OutDir
@@ -210,15 +206,16 @@ EOF
     for Target in "${!Targets[@]}"; do
       Test=${Targets[$Target]}
       cat >>$Makefile <<EOF
+
 $OutDir/$Target: $Test \$(wildcard src/*.cpp)
 $(printf "\t")${Rules[$Target]}
-
 EOF
     done
     for Test in "${!Targets[@]}"; do
       Target="$OutDir/${Targets[$Test]}"
     done
     cat >>$Makefile <<EOF
+
 clean:
 $(printf "\t")find $OutDir -type f -executable -delete
 EOF
@@ -280,32 +277,9 @@ EOF
               #
               # Grouped
               #
-              # THIS CODE IS NOT YET WORKING
+              # TBD: group all variations of a test parallely
               #
-              # TBD: group all variations of a test in one line and
-              #      execute parallely
-              #
-              declare -A chained
-              for target in $(for x in ${!Targets[@]}; do echo $x; done | sort)
-              do
-                tbase=$(basename ${Targets[$target]} .cpp)
-                chained[$tbase]+="./$target & "
-              done
-              for tbase in $(for x in ${!chained[@]}; do echo $x; done | sort)
-              do
-                Good=0 Bad=0 Missing=0
-                t=${chained[$tbase]}
-                printf "%-32s % 10u run(s) " $tbase $Cmd
-                for i in $(seq 1 $Cmd); do
-                  if ($t) 2>>$tbase.stderr | tee -a $tbase.stdout; then
-                    test ${PIPESTATUS[0]} -eq 0 && ((Good++))
-                  else
-                    ((Missing++))
-                  fi
-                done
-                Bad=$((Cmd - Good - Missing))
-                printf "% 10u bad % 10u good\n" $Bad $Good
-              done
+              die "unimplemented"
             else
               #
               # Ungrouped
@@ -315,40 +289,67 @@ EOF
               # enabled stop the script.
               #
               lno=1
-              for t in $(for x in ${!Targets[@]}; do echo $x; done | sort)
+              Report="$Pwd/${March}-report.md"
+              cat >$Report <<EOF
+<!---*- mode:markdown; eval:(auto-revert-mode); -*--->
+EOF
+              for Target in $(for x in ${!Targets[@]}; do echo $x; done | sort)
               do
-                Good=0 Bad=0 Missing=0 exists=0 x=
-                [[ -x $t ]] && ((exists=1)) || x=' !! MISSING'
-                ((optquiet<2)) && printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetsSize "$t$x" $Cmd
+                Good=0 Bad=0 Missing=0 Exists=0 Type=$(file $Target) Error=''
+                if [[ -x $Target ]]; then
+                  if [[ $Type =~ 'executable' ]]; then
+                    Exists=1
+                  else
+                    Error="${ANSI_RED}EXEC FORMAT ERROR${ANSI_OFF}"
+                  fi
+                else
+                  Error="${ANSI_RED}MISSING${ANSI_OFF}"
+                fi
+                printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetsSize $Target $Cmd
                 for ext in stderr stdout stackdump; do
-                  rm -f $t.$ext
+                  rm -f $Target.$ext
                 done
                 for i in $(seq 1 $Cmd); do
-                  if ((exists)); then
-                    cout "run $i/$Cmd" >>$t.stdout
-                    cout "run $i/$Cmd" >>$t.stderr
-                    if ($Sudo ./$t) 2>>$t.stderr 1>>$t.stdout; then
-                      ((Good++))
-                      echo "exit code 0" >>$t.stderr
-                    else
-                      echo "exit code $?" >>$t.stderr
-                    fi
+                  if ((Exists)); then
+                    ($Sudo ./$Target) 2>>$Target.stderr | tee -a $Target.stdout
+                    Result=${PIPESTATUS[0]}
+                    echo "$i/$Cmd: exit code $Result" >>$Target.stderr
+                    ((Result==0 && Good++))
                   else
                     ((Missing++))
                   fi
                 done
+                cat >>$Report <<EOF
+
+# $Target
+$Error
+$Type
+
+EOF
                 for ext in stderr stdout stackdump; do
-                  [[ -s $t.$ext ]] || rm -f $t.${ext} # remove if empty
+                  if [[ -s $Target.$ext ]]; then
+                    cat >>$Report <<EOF
+## $ext
+
+$(cat $Target.$ext)
+EOF
+                  else
+                    rm -f $Target.$ext
+                  fi
                 done
                 Bad=$((Cmd - Good - Missing))
-                ((optquiet<2)) && printf "% 10u bad % 10u good\n" $Bad $Good
+                printf "% 10u bad % 10u good${Error:+ !! }$Error\n" $Bad $Good
                 ((TotalRuns+=Cmd)); ((TotalGood+=Good)); ((TotalBad+=Bad)); ((TotalMissing+=Missing))
-                if ((optshy && TotalBad)); then
-                  die "bailing out"
+                if ((Missing)); then
+                  die "missing or invalid executables"
+                elif ((optshy && Bad)); then
+                  die "bad runs in shy mode"
                 fi
+                #die $Missing
               done
             fi
             popd >/dev/null
+            info "report was written to $(basename $Report)"
           fi
           ;;
 
@@ -363,12 +364,12 @@ EOF
           ((optquiet==2)) && jiva+=' -q'
           ((optshy)) && jiva+=' -s'
           [[ -n $Flavor ]] && jiva+=" -f $Flavor"
-          if $jiva build info; then
+          CmdSuccess=0
+          if $jiva build; then
             for fn in ${fnno[@]}; do
-              $Sudo $jiva $fn && CmdSuccess=1 || CmdSuccess=0
+              $Sudo $jiva $fn && CmdSuccess=1 || exit -1
             done
-          else
-            exit
+            ((CmdSuccess)) || exit
           fi
           ;;
 
@@ -379,7 +380,7 @@ EOF
         'stress')
           jiva="$0 -DOER -q -q -s"
           fnno=(0 1 1 2 3 5 8 12 21)
-          if $jiva build info; then
+          if $jiva build; then
             for fn in ${fnno[@]}; do
               $Sudo $jiva $fn && CmdSuccess=1 || CmdSuccess=0
             done
@@ -400,7 +401,7 @@ EOF
           rm -rf $OutDir && mkdir -pv $OutDir || exit
           ;;
         'build'|'clean')
-          info ${Make[@]} -f $Makefile $Cmd
+          info "${Make[@]} -f $Makefile $Cmd"
           if ${Make[@]} -f $Makefile $Cmd; then
             CmdSuccess=1
           else
@@ -424,7 +425,6 @@ EOF
         }
       done
       wait
-
       if ((CmdSuccess)); then
         ((0)) && cerr "command '$Cmd' succeeded"
         :
