@@ -327,11 +327,11 @@ EOF
                   if ((exists)); then
                     cout "run $i/$Cmd" >>$t.stdout
                     cout "run $i/$Cmd" >>$t.stderr
-                    if ($Sudo ./$t) 2>>$t.stderr | tee -a $t.stdout; then
-                      test ${PIPESTATUS[0]} -eq 0 && ((Good++))
+                    if ($Sudo ./$t) 2>>$t.stderr 1>>$t.stdout; then
+                      ((Good++))
                       echo "exit code 0" >>$t.stderr
                     else
-                      echo "exit code ${PIPESTATUS[0]}" >>$t.stderr
+                      echo "exit code $?" >>$t.stderr
                     fi
                   else
                     ((Missing++))

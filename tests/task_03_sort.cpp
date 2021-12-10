@@ -2,44 +2,47 @@
  *
  * Find out execution time of realtime threads.
  *
- * In each thred generate and sort a random integer vector within a
+ * In each thread generate and sort a random integer vector within a
  * given number of milliseconds, or fail.
  */
 #include "common.h"
-
-#include <algorithm>
-#include <cstdlib>
-#include <ctime>
+#include <array>
+#include <base/algorithm.h>
 
 using namespace std;
 
-template <int Ms>
-struct CriticalSort : CriticalTask<Ms> {
-  using value_type = int;
-  vector<value_type> data;
-
-  CriticalSort(int size)
-    : data(size) { }
-
+template <int Ms, int Size>
+struct DefaultSort : CriticalTask<Ms> {
+  array<int, Size> data;
   void run() override {
     srand(time(nullptr));
-    // for (auto& i : data) { i = rand() % data.size() + 1; }
-    generate(data.begin(), data.end(),
-             [this]()->value_type { return rand() % data.size() + 1; });
+    // for (auto& i : data) { i = rand(); }
+    generate(data.begin(), data.end(), [this]()->int { return rand(); });
     sort(data.begin(), data.end());
+  }
+};
+
+template <int Ms, int Size>
+struct BubbleSort : CriticalTask<Ms> {
+  array<int, Size> data;
+  void run() override {
+    srand(time(nullptr));
+    generate(data.begin(), data.end(), [this]()->int { return rand(); });
+    base::bubble_sort(data);
   }
 };
 
 int
 main(int argc, char *argv[])
 {
-  CriticalSort<3> t { 1000};
-  CriticalSort<4> u {10000};
 
-  t.start(3);
-  u.start(2);
+  DefaultSort<3, 1000> t;       // sort within 3ms or fail
+  BubbleSort< 3,  100> u;
 
-  t.join(); PRINT(t);
+  t.start();
+  u.start();
+
+  t.join(); PRINT(t);           // see task_03_sort.stdout
   u.join(); PRINT(u);
 
   return EXIT_SUCCESS;

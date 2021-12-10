@@ -1,7 +1,7 @@
 #
 # Compile: make stress
-# Compile: make parinama
 # Compile: make quick
+# Compile: make parinama
 #
 # 1. chrono
 # 2. selbststests base_01_self
@@ -22,7 +22,7 @@ rebuild: clean; $(PUDDING) -D build
 # maintainer targets
 #
 stress: clean; $(PUDDING) -DOPER $@
-parinama: clean; $(PUDDING) -f$@ -s -DR build 10
+parinama:; $(PUDDING) -f$@ -s -DR clean build 100
 f1 p3: clean; $(PUDDING) -f$@ -s -DR build 10
 
 clean: TAGS

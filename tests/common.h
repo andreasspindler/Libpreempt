@@ -4,8 +4,8 @@
 #include <chrono>
 #include <iostream>
 
-#include <base/idioms.h>
 #include <base/utility.h>
+#include <base/string.h>
 
 #include <preempt/task.h>
 
@@ -18,7 +18,7 @@
  *            longer.
  */
 template <int Ms>
-class CriticalTask : public preempt::mono_task<>, public base::runnable {
+class CriticalTask : public preempt::mono_task<> {
 public:
   using clock = std::chrono::high_resolution_clock;
 
@@ -73,11 +73,10 @@ CriticalTask<Ms>::hook()
   auto deadline = start + milliseconds {Ms};
   { run(); }
   auto stop = clock::now();
+  auto us = duration_cast<microseconds>(stop - start);
+  usec_ = us.count();           // just store last duration
   if (stop > deadline) {
-    base::quick_exit("CriticalTask: deadline error");
-  } else {
-    auto us = duration_cast<microseconds>(stop - start);
-    usec_ = us.count();         // just store last duration
+    base::quick_exit(base::sprintf("CriticalTask error: deadline=%ums used=%lums", Ms, usec_ / 1000).c_str());
   }
 }
 

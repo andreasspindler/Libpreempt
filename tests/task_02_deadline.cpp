@@ -7,12 +7,11 @@
 using namespace std;
 
 /**
- * Thread that sleeps 3ms on each invocation.
+ * Task that sleeps 3ms on each invocation.
  *
- * Fails if run() runs longer than 10ms.
+ * Fails if run() runs longer than 12ms.
  */
-class SleepFor3ms : public CriticalTask<15> {
-public:
+struct SleepFor3ms : CriticalTask<12> {
   void run() override {
     this_thread::sleep_for(chrono::milliseconds      {1});
     this_thread::sleep_for(chrono::microseconds   {1000});

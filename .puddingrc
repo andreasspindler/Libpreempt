@@ -20,7 +20,7 @@ in
     Tests=($(find_tests $InDir 'sched_*.cpp'))
     ;;
   parinama)                     # Sanskrit: development, change
-    Tests=($(find_tests $InDir 'task_*.cpp'))
+    Tests=($(find_tests $InDir 'task_03*.cpp'))
     Standards=(c++17)
     Make=(make -j1)
     CC+=(-fmax-errors=3)
