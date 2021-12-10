@@ -11,7 +11,7 @@ using namespace std;
  *
  * Fails if run() runs longer than 10ms.
  */
-class SleepFor3ms : public CriticalTask<10> {
+class SleepFor3ms : public CriticalTask<15> {
 public:
   void run() override {
     this_thread::sleep_for(chrono::milliseconds      {1});

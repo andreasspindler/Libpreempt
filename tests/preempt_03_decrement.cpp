@@ -1,10 +1,8 @@
 /*
- * SCHED_FIFO threads with different priorities
- *
- * Strictly check the order in whcih SCHED_FIFO threads are scheduled.
+ * Strictly check the order in which SCHED_FIFO threads are scheduled.
  *
  * Runs threads under SCHED_FIFO realtime policy with different priorities. Each
- * threads:
+ * thread:
  *  - read global integer and fail unless it has a certain value
  *  - decrement the integer
  *

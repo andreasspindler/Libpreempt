@@ -9,28 +9,28 @@
 #
 # The value is set by "pudding.sh -f FLAVOR".
 #
-TestTarget='Libpreempt'
+Name='Libpreempt'
 
 case ${Flavor}
 in
   std)
-    Tests=($(find_tests $TestDir 'std_*.cpp'))
+    Tests=($(find_tests $InDir 'std_*.cpp'))
     ;;
   sched)
-    Tests=($(find_tests $TestDir 'sched_*.cpp'))
+    Tests=($(find_tests $InDir 'sched_*.cpp'))
     ;;
   parinama)                     # Sanskrit: development, change
-    Tests=($(find_tests $TestDir 'task_*.cpp'))
+    Tests=($(find_tests $InDir 'task_*.cpp'))
     Standards=(c++17)
     Make=(make -j1)
     CC+=(-fmax-errors=3)
     ;;
   p3)
-    Tests=($(find_tests $TestDir 'preempt_03*.cpp'))
+    Tests=($(find_tests $InDir 'preempt_03*.cpp'))
     #Standards=(c++14)
     ;;
   f1)
-    Tests=($(find_tests $TestDir 'firmware_01*.cpp'))
+    Tests=($(find_tests $InDir 'firmware_01*.cpp'))
     Standards=(c++14 c++17)
     ;;
 esac

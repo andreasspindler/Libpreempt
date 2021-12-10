@@ -3,6 +3,9 @@
 # Compile: make parinama
 # Compile: make quick
 #
+# 1. chrono
+# 2. selbststests base_01_self
+#
 .PHONY: all quick build refresh real clean realclean
 
 PUDDING=./pudding.sh

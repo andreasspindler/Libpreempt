@@ -2,8 +2,8 @@
  *
  * Find out execution time of realtime threads.
  *
- * In each thred generate and sort a random integer vector within a given number
- * of milliseconds, or fail.
+ * In each thred generate and sort a random integer vector within a
+ * given number of milliseconds, or fail.
  */
 #include "common.h"
 
@@ -34,7 +34,7 @@ int
 main(int argc, char *argv[])
 {
   CriticalSort<3> t { 1000};
-  CriticalSort<5> u {10000};
+  CriticalSort<4> u {10000};
 
   t.start(3);
   u.start(2);

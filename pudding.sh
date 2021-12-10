@@ -12,9 +12,9 @@
   #
   # we use camel-case to denote global variables
   #
-  TestTarget=$(basename "$PWD")
-  TestDir='tests'
-  TestOutDir="out"
+  Name=$(basename "$PWD")
+  InDir='tests'
+  OutDir="out"
   Flavor='all'
   CC=(g++ -pthread -D_GNU_SOURCE)
   Standards=(c++14 c++17)
@@ -57,8 +57,9 @@ Global variables that can be overrided in '.puddingrc':
 
   NAME                DEFAULT
   Flavor              $Flavor
-  TestDir             $TestDir
-  Tests               (<all .cpp-files under TestDir>)
+  InDir               $InDir
+  OutDir              $OutDir
+  Tests               (<all .cpp-files under InDir>)
   Standards           (${Standards[@]})
   Optimizations       (${Optimizations[@]})
   CC                  ${CC[@]}
@@ -100,9 +101,9 @@ EOF
     shift $((OPTIND-1))
     (($#)) && Cmds=("$@") || Cmds=()
     March=$(hostname)-$Flavor
-    OutDir="$TestOutDir/$March"
+    OutDir="$OutDir/$March"
 
-    find_tests() { find ${1:-$TestDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
+    find_tests() { find ${1:-$InDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
     readcommit() { git -C ${1:-.} rev-parse --short ${2:-HEAD} || echo ''; }
     {
       missing=()
@@ -119,7 +120,7 @@ EOF
   ANSI_YLW="\033[1;33m"
   ANSI_RED="\033[1;91m" ANSI_DRD="\033[1;31m"
   ANSI_OFF="\033[0m"
-  cout() { echo -e "### $(hostname) $TestTarget(${Flavor}) ***" "$@"; }
+  cout() { echo -e "### $(hostname) $Name(${Flavor}) ***" "$@"; }
   cerr() { cout "$@"; } >&2
   info() { ((optquiet<1)) && cout "${ANSI_YLW}$@${ANSI_OFF}"; }
   chat() { ((optquiet<2 && optverbose>0)) && cout "$@"; }
@@ -134,7 +135,7 @@ EOF
   #
   case $Flavor in
     ''|all|thorough)
-      Tests=($(find_tests $TestDir))
+      Tests=($(find_tests $InDir))
       ;;
   esac
 
@@ -389,8 +390,8 @@ EOF
         # Unmatched commands are forwarded as Makefile targets.
         #
         'maintainer-clean')
-          info "removing '$TestOutDir'"
-          rm -rf tags TAGS BROWSE $TestOutDir
+          info "removing '$OutDir'"
+          rm -rf tags TAGS BROWSE $OutDir
           exit # can't continue with commands if the output directory
                # is gone
           ;;
