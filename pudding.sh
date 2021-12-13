@@ -15,7 +15,7 @@
   Name=$(basename "$PWD")
   InDir='tests'
   OutDir="out"
-  Flavor='all'
+  Configuration='all'
   CC=(g++ -pthread -D_GNU_SOURCE)
   Standards=(c++14 c++17)
   Optimizations=()
@@ -28,7 +28,7 @@ Usage:
    $0 [OPTIONS]... [<CMD>]...
 
 Options:
-  -f<FLAVOR>    set test flavor
+  -c<NAME>      define test configuration (default: $Config)
   -o<OPT>       add optimization level
   -D            shortcut for '-o debug'
   -O            shortcut for '-o O0 -o O1 -o O2 -o O3 -o Os -o Ofast'
@@ -56,7 +56,7 @@ Valid values for <CMD>:
 Global variables that can be overrided in '.puddingrc':
 
   NAME                DEFAULT
-  Flavor              $Flavor
+  Configuration       $Configuration
   InDir               $InDir
   OutDir              $OutDir
   Tests               (<all .cpp-files under InDir>)
@@ -79,16 +79,16 @@ EOF
       exit ${1:-1}
     }
 
-    optshy=0 optquiet=0 optverbose=0 optparallelize=0
+    optshy=0 optquiet=0 optrelax=0 optparallelize=0
 
-    while getopts "DOPERf:o:j:qsSh" o; do
+    while getopts "DOPERc:o:j:qsSh" o; do
       case "$o" in
         D) Optimizations+=('debug');;
         O) Optimizations+=('O0' 'O1' 'O2' 'O3' 'Os' 'Ofast');;
         P) Optimizations+=('profile');;
         E) Optimizations+=('enlightened');;
         R) Optimizations+=('release');;
-        f) Flavor=$OPTARG;;
+        c) Configuration=$OPTARG;;
         o) Optimizations+=($OPTARG);;
         j) Make+=(-j$OPTARG);;
         q) ((optquiet++));;
@@ -101,7 +101,7 @@ EOF
     shift $((OPTIND-1))
     Cmds=('build')
     (($#)) && Cmds+=("$@") || Cmds+=()
-    March=$(hostname)-$Flavor
+    March=$(hostname)-$Configuration
     OutDir="$OutDir/$March"
 
     find_tests() { find ${1:-$InDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
@@ -121,10 +121,10 @@ EOF
   ANSI_YLW="\033[1;33m"
   ANSI_RED="\033[1;91m" ANSI_DRD="\033[1;31m"
   ANSI_OFF="\033[0m"
-  cout() { echo -e "### $(hostname) $Name(${Flavor}) ***" "$@"; }
+  cout() { echo -e "### $(hostname) $Name(${Configuration}) ***" "$@"; }
   cerr() { cout "$@"; } >&2
   info() { ((optquiet<1)) && cout "${ANSI_YLW}$@${ANSI_OFF}"; }
-  chat() { ((optquiet<2 && optverbose>0)) && cout "$@"; }
+  chat() { ((optquiet<2)) && cout "NOTE: ${ANSI_YLW}$@${ANSI_OFF}"; }
   warn() { cerr "${ANSI_DGR}WARNING:${ANSI_GRN}" "$@" "$ANSI_OFF"; }
   error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
   die() { error "$@"; exit 1; }
@@ -176,7 +176,6 @@ EOF
       done
     done
     TargetsSize=${#Targets[@]}
-    info "$TestsSize tests => $TargetsSize executables"
   }
 
   ##############################################
@@ -260,16 +259,18 @@ EOF
         [0-9]*)
           if pushd $OutDir >/dev/null; then
             Summary=1
-            info "$TestsSize tests => $TargetsSize targets => $((Cmd * TargetsSize)) runs"
-            ((RunningUnderVM)) && warn "running under VM"
-            ((RunningUnderPREEMPT)) || warn "no PREEMPT_RT patches installed in kernel"
+            info "RUNNING $TestsSize tests => $TargetsSize targets => $((Cmd * TargetsSize)) runs"
+            ((RunningUnderVM)) && { optrelax=1; warn "running under VM"; }
+            ((RunningUnderPREEMPT)) || { optrelax=1; warn "no PREEMPT_RT patches installed in kernel"; }
             if ((RunningAsRoot)); then
               :
             elif ((UserMaximumRTPriority==0)); then
               error "user '$USER' cannot start real-time threads"
             elif ((UserMaximumRTPriority<32)); then
+              optrelax=1
               warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
             elif ((UserMaximumRTPriority < 99 && RunningUnderLinux)); then
+              optrelax=1
               warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
             fi
 
@@ -305,7 +306,6 @@ EOF
                 else
                   Error="${ANSI_RED}MISSING${ANSI_OFF}"
                 fi
-                printf "#% 4u/% 4u: %-40s % 10u run(s) " $((lno++)) $TargetsSize $Target $Cmd
                 for ext in stderr stdout stackdump; do
                   rm -f $Target.$ext
                 done
@@ -338,14 +338,16 @@ EOF
                   fi
                 done
                 Bad=$((Cmd - Good - Missing))
-                printf "% 10u bad % 10u good${Error:+ !! }$Error\n" $Bad $Good
+                if ((optshy==0 || Bad || Missing)); then
+                  printf "#% 4u/% 4u: %-40s % 10u run(s) % 10u bad % 10u good${Error:+ !! }$Error\n" \
+                         $((lno++)) $TargetsSize $Target $Cmd $Bad $Good
+                fi
                 ((TotalRuns+=Cmd)); ((TotalGood+=Good)); ((TotalBad+=Bad)); ((TotalMissing+=Missing))
                 if ((Missing)); then
                   die "missing or invalid executables"
-                elif ((optshy && Bad)); then
+                elif ((optshy==2 && Bad)); then
                   die "bad runs in shy mode"
                 fi
-                #die $Missing
               done
             fi
             popd >/dev/null
@@ -354,37 +356,25 @@ EOF
           ;;
 
         ########################################
-        # Rebuild and do lots of runs until CTRL-C is pressed or all
+        # Rebuild and do [lots of] runs until CTRL-C is pressed or all
         # work is done.
         #
-        'afk')
-          jiva="$0 -DOER"
-          fnno=(0 1 1 2 3 5 8 12 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 10946 17711 28657 46368)
-          ((optquiet>=1)) && jiva+=' -q'
-          ((optquiet==2)) && jiva+=' -q'
-          ((optshy)) && jiva+=' -s'
-          [[ -n $Flavor ]] && jiva+=" -f $Flavor"
-          CmdSuccess=0
-          if $jiva build; then
-            for fn in ${fnno[@]}; do
-              $Sudo $jiva $fn && CmdSuccess=1 || exit -1
-            done
-            ((CmdSuccess)) || exit
-          fi
-          ;;
-
-        ########################################
-        # Compile all files on all optimization levels and try a few
-        # runs.
-        #
-        'stress')
-          jiva="$0 -DOER -q -q -s"
-          fnno=(0 1 1 2 3 5 8 12 21)
-          if $jiva build; then
-            for fn in ${fnno[@]}; do
-              $Sudo $jiva $fn && CmdSuccess=1 || CmdSuccess=0
-            done
-          fi
+        'afk'|'stress')
+          jiva="$0 -DOER -s"
+          [[ -n $Configuration ]] && jiva+=" -f $Configuration"
+          for ((i=0; i<optquiet; i++)); do
+            jiva+=' -q'
+          done
+          fnno=(0 1 1 2 3 5 8 12)
+          case $Cmd in
+            'afk')
+              fnno+=(21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 10946 17711 28657 46368)
+              ;;
+          esac
+          for fn in ${fnno[@]}; do
+            info "$jiva $fn"
+            $Sudo $jiva $fn || die "$Cmd"
+          done
           ;;
 
         ########################################
@@ -401,7 +391,8 @@ EOF
           rm -rf $OutDir && mkdir -pv $OutDir || exit
           ;;
         'build'|'clean')
-          info "${Make[@]} -f $Makefile $Cmd"
+          info "COMPILING $TestsSize tests => $TargetsSize executables"
+          chat "${Make[@]} -f $Makefile $Cmd"
           if ${Make[@]} -f $Makefile $Cmd; then
             CmdSuccess=1
           else
@@ -447,13 +438,8 @@ EOF
       fi
       info "$TotalGoodPercent% ($TotalRuns runs = $TotalGood good + $TotalBad bad + $TotalMissing missing)"
       case $TotalGoodPercent in
-        100*)
-          info "exit code 0"
-          ;;
-        *)
-          info "exit code 1"
-          exit 1
-          ;;
+        100*) ;;
+        *) ((optrelax)) && exit 0 || exit 1;;
       esac
     fi
   }

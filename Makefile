@@ -17,9 +17,9 @@ rebuild: clean; $(PUDDING) -DR
 
 # maintainer targets
 #
-stress afk:; $(PUDDING) -f$@ -DOPER $@
-parinama:; $(PUDDING) -f$@ -s -DR clean 100
-f1 p3: clean; $(PUDDING) -f$@ -s -D 10
+stress afk:; $(PUDDING) -c$@ -DOPER $@
+parinama:; $(PUDDING) -c$@ -s -DR clean 100
+f1 p3: clean; $(PUDDING) -c$@ -s -D 10
 
 clean: TAGS
 	$(PUDDING) clean

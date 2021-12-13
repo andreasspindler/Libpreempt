@@ -3,15 +3,9 @@
 #
 # .puddingrc -- Project resource file
 #
-# Set global variables based on the current value of
-#
-#    $TestFlavor
-#
-# The value is set by "pudding.sh -f FLAVOR".
-#
 Name='Libpreempt'
 
-case ${Flavor}
+case ${Configuration}
 in
   std)
     Tests=($(find_tests $InDir 'std_*.cpp'))
@@ -27,12 +21,8 @@ in
     Make=(make -j1)
     CC+=(-fmax-errors=3)
     ;;
-  p3)
-    Tests=($(find_tests $InDir 'preempt_03*.cpp'))
-    #Standards=(c++14)
-    ;;
-  f1)
-    Tests=($(find_tests $InDir 'firmware_01*.cpp'))
+  1|2)
+    Tests=($(find_tests $InDir 'firmware_0$Configuration.cpp'))
     Standards=(c++14 c++17)
     ;;
 esac
