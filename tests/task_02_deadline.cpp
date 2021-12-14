@@ -32,5 +32,5 @@ main(int argc, char *argv[])
   t1.join(); PRINT(t1);
   t2.join(); PRINT(t2);
 
-  return EXIT_SUCCESS;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

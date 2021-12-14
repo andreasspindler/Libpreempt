@@ -34,5 +34,5 @@ int main(int argc, char *argv[])
 
   preempt::this_process::end_realtime();
 
-  return EXIT_SUCCESS;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

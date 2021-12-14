@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
   preempt::this_process::end_realtime();
 
-  return EXIT_SUCCESS;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 void*
@@ -88,8 +88,5 @@ run(int (&priority_table)[N])
     c.join();
   }
 
-  /* after N decrement() the value has to be 0 again */
-  if (global_value != 0) {
-    exit(EXIT_FAILURE);
-  }
+  VERIFY(global_value == 0);
 }

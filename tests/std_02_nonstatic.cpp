@@ -76,4 +76,6 @@ int main(int argc, char *argv[])
 
     Task().start();
   }
+
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

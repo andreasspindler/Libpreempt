@@ -55,4 +55,6 @@ int main(int argc, char *argv[])
   for (std::thread& th : tha) {
     th.join();
   }
+
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

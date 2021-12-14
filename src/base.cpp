@@ -2,6 +2,7 @@
 
 namespace base {
 std::mutex g_logging_mutex;
+std::atomic_bool g_verify_flag {true};
 
 std::pair<int, int>
 get_thread_policy_and_prioritiy(pthread_t h) {
@@ -79,3 +80,13 @@ have_realtime_kernel() {
 #endif /* RUNNING_UNDER_LINUX */
 }
 } // base
+
+bool
+get_verify_flag() {
+  return base::g_verify_flag;
+}
+
+void
+set_verify_flag(bool v) {
+  base::g_verify_flag = v;
+}

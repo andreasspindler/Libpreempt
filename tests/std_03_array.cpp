@@ -69,5 +69,6 @@ int main(int argc, char *argv[])
     std::cerr << "catched: " << ex.what() << std::endl;
     std::terminate();
   }
-  return 0;
+
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -3,5 +3,5 @@
 
 int main(int argc, char *argv[])
 {
-  return EXIT_SUCCESS;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

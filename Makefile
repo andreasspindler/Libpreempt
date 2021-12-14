@@ -18,15 +18,15 @@ rebuild: clean; $(PUDDING) -DR
 # maintainer targets
 #
 stress afk:; $(PUDDING) -c$@ -DOPER $@
-parinama:; $(PUDDING) -c$@ -s -DR clean 100
-f1 p3: clean; $(PUDDING) -c$@ -s -D 10
+list:; $(PUDDING) -DOPER $@
+parinama:; $(PUDDING) -c$@ -D 100
 
 clean: TAGS
 	$(PUDDING) clean
 	rm -f *.mak a.out
 realclean: clean
 	rm -rf out
-	rm -f TAGS
+	rm -f TAGS *.gcno
 	find -name '.#-emacs*' -delete
 	git gc
 FORCE:

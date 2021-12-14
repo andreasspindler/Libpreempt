@@ -18,6 +18,27 @@
 #include <cassert>
 #include <errno.h>
 
+/**
+ * Like assert() but also if NDEBUG is defined.
+ *
+ * @example:
+ *   VERIFY(expr);
+ *
+ * @example:
+ *   if (VERIFY(expr))
+ *     // expr is true
+ *   else
+ *     // expr is false, a message was printed to stderr
+ */
+#define VERIFY(expr)                                                    \
+  ((!!(expr)) || (base::verify_error(#expr, __FILE__, __LINE__), false))
+
+/**
+ * @return True if all @ref VERIFY() macros evaluated true so far.
+ */
+void set_verify_flag(bool);
+bool get_verify_flag();
+
 namespace base {
 /**
  * @example:
@@ -53,7 +74,7 @@ void breakpoint(bool unconditional = true);
  * Solution: in multi-threaded programs use base::terminate() to leave
  * ctors/dtors unconditionally and base::quick_exit() otherwise.
  */
-void quick_exit(char const* descr) NORETURN;
+void quick_exit(char const* descr = nullptr) NORETURN;
 void quick_exit(char const* descr, char const* file, unsigned line) NORETURN;
 
 /**
@@ -70,28 +91,6 @@ void quick_exit(char const* descr, char const* file, unsigned line) NORETURN;
  */
 void terminate(char const* descr) NORETURN;
 void terminate(char const* descr, char const* file, unsigned line) NORETURN;
-
-/**
- * Like assert() but also if NDEBUG is defined.
- *
- * @example:
- *   VERIFY(expr);
- *
- * @example:
- *   if (VERIFY(expr))
- *     // expr is true
- *   else
- *     // expr is false, a message was printed to stderr
- */
-#define VERIFY(expr)                                                    \
-  ((!!(expr)) || (base::verify_error(#expr, __FILE__, __LINE__), false))
-
-/**
- * @return True if all @ref VERIFY() macros evaluated true so far.
- */
-#if HAVE_CXX_17
-bool verify_flag(std::optional<bool> set = std::nullopt);
-#endif // HAVE_CXX_17
 
 /***********************************************************************
  * inlined implementation
@@ -168,18 +167,6 @@ inline
 void
 verify_error(char const* msg, char const* file, unsigned line) {
   std::fprintf(stderr, "Verification failed! %s at %s(%u)\n", msg, file, line);
-#if HAVE_CXX_17
-  verify_flag(false);
-#endif // HAVE_CXX_17
+  set_verify_flag(false);
 }
-
-#if HAVE_CXX_17
-inline
-bool
-verify_flag(std::optional<bool> set) {
-  static std::atomic_bool result {true};
-  if (set) result = *set;
-  return result;
-}
-#endif // HAVE_CXX_17
 } /* base */

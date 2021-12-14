@@ -31,66 +31,63 @@ Example:
  > cd Libpreempt
  > sudo make
 ./pudding.sh -DR build 10
+### multivm Libpreempt(all) *** Linux 5.8.0-53-generic x86_64 (g++ (GCC) 8.3.0)
 ### multivm Libpreempt(all) *** c++14 c++17 debug release
-### multivm Libpreempt(all) *** 12 tests => 48 targets
+### multivm Libpreempt(all) *** multivm-all.mak => out/multivm-all/
+### multivm Libpreempt(all) *** 12 tests => 48 targets => 4800 runs
 ### multivm Libpreempt(all) *** WARNING: running under VM 
 ### multivm Libpreempt(all) *** WARNING: no PREEMPT_RT patches installed in kernel 
-### multivm Libpreempt(all) *** make -S -j4 -f multivm-all.mak build
-make[1]: Entering directory '/media/sf_H_DRIVE/shastras/Libpreempt'
-   .
-   .
-make[1]: Leaving directory '/media/sf_H_DRIVE/shastras/Libpreempt'
-### multivm Libpreempt(all) *** 12 tests => 48 targets => 480 runs
-#   1/  48: base_01_thread.c++14.debug                       10 run(s)          0 bad         10 good
-#   2/  48: base_01_thread.c++14.release                     10 run(s)          0 bad         10 good
-#   3/  48: base_01_thread.c++17.debug                       10 run(s)          0 bad         10 good
-#   4/  48: base_01_thread.c++17.release                     10 run(s)          0 bad         10 good
-#   5/  48: preempt_01_self.c++14.debug                      10 run(s)          0 bad         10 good
-#   6/  48: preempt_01_self.c++14.release                    10 run(s)          0 bad         10 good
-#   7/  48: preempt_01_self.c++17.debug                      10 run(s)          0 bad         10 good
-#   8/  48: preempt_01_self.c++17.release                    10 run(s)          0 bad         10 good
-#   9/  48: preempt_02_fifo.c++14.debug                      10 run(s)          0 bad         10 good
-#  10/  48: preempt_02_fifo.c++14.release                    10 run(s)          0 bad         10 good
-#  11/  48: preempt_02_fifo.c++17.debug                      10 run(s)          0 bad         10 good
-#  12/  48: preempt_02_fifo.c++17.release                    10 run(s)          0 bad         10 good
-#  13/  48: preempt_03_decrement.c++14.debug                 10 run(s)          0 bad         10 good
-#  14/  48: preempt_03_decrement.c++14.release               10 run(s)          0 bad         10 good
-#  15/  48: preempt_03_decrement.c++17.debug                 10 run(s)          0 bad         10 good
-#  16/  48: preempt_03_decrement.c++17.release               10 run(s)          0 bad         10 good
-#  17/  48: preempt_04_thread.c++14.debug                    10 run(s)          0 bad         10 good
-#  18/  48: preempt_04_thread.c++14.release                  10 run(s)          0 bad         10 good
-#  19/  48: preempt_04_thread.c++17.debug                    10 run(s)          0 bad         10 good
-#  20/  48: preempt_04_thread.c++17.release                  10 run(s)          0 bad         10 good
-#  21/  48: std_01_thread.c++14.debug                        10 run(s)          0 bad         10 good
-#  22/  48: std_01_thread.c++14.release                      10 run(s)          0 bad         10 good
-#  23/  48: std_01_thread.c++17.debug                        10 run(s)          0 bad         10 good
-#  24/  48: std_01_thread.c++17.release                      10 run(s)          0 bad         10 good
-#  25/  48: std_02_nonstatic.c++14.debug                     10 run(s)          0 bad         10 good
-#  26/  48: std_02_nonstatic.c++14.release                   10 run(s)          0 bad         10 good
-#  27/  48: std_02_nonstatic.c++17.debug                     10 run(s)          0 bad         10 good
-#  28/  48: std_02_nonstatic.c++17.release                   10 run(s)          0 bad         10 good
-#  29/  48: std_03_array.c++14.debug                         10 run(s)          0 bad         10 good
-#  30/  48: std_03_array.c++14.release                       10 run(s)          0 bad         10 good
-#  31/  48: std_03_array.c++17.debug                         10 run(s)          0 bad         10 good
-#  32/  48: std_03_array.c++17.release                       10 run(s)          0 bad         10 good
-#  33/  48: std_04_lambda.c++14.debug                        10 run(s)          0 bad         10 good
-#  34/  48: std_04_lambda.c++14.release                      10 run(s)          0 bad         10 good
-#  35/  48: std_04_lambda.c++17.debug                        10 run(s)          0 bad         10 good
-#  36/  48: std_04_lambda.c++17.release                      10 run(s)          0 bad         10 good
-#  37/  48: task_01_monopoly.c++14.debug                     10 run(s)          0 bad         10 good
-#  38/  48: task_01_monopoly.c++14.release                   10 run(s)          0 bad         10 good
-#  39/  48: task_01_monopoly.c++17.debug                     10 run(s)          0 bad         10 good
-#  40/  48: task_01_monopoly.c++17.release                   10 run(s)          0 bad         10 good
-#  41/  48: task_02_deadline.c++14.debug                     10 run(s)          0 bad         10 good
-#  42/  48: task_02_deadline.c++14.release                   10 run(s)          0 bad         10 good
-#  43/  48: task_02_deadline.c++17.debug                     10 run(s)          1 bad          9 good
-#  44/  48: task_02_deadline.c++17.release                   10 run(s)          1 bad          9 good
-#  45/  48: task_03_sort.c++14.debug                         10 run(s)          0 bad         10 good
-#  46/  48: task_03_sort.c++14.release                       10 run(s)          0 bad         10 good
-#  47/  48: task_03_sort.c++17.debug                         10 run(s)          0 bad         10 good
-#  48/  48: task_03_sort.c++17.release                       10 run(s)          0 bad         10 good
-### multivm Libpreempt(all) *** 99.500% (480 runs = 478 good + 2 bad + 0 missing)
-### multivm Libpreempt(all) *** exit code 1
+    1/   48:  base_01_self.c++14.debug                        100 runs          0 bad        100 good
+    2/   48:  base_01_self.c++14.release                      100 runs          0 bad        100 good
+    3/   48:  base_01_self.c++17.debug                        100 runs          0 bad        100 good
+    4/   48:  base_01_self.c++17.release                      100 runs          0 bad        100 good
+    5/   48:  preempt_01_self.c++14.debug                     100 runs          0 bad        100 good
+    6/   48:  preempt_01_self.c++14.release                   100 runs          0 bad        100 good
+    7/   48:  preempt_01_self.c++17.debug                     100 runs          0 bad        100 good
+    8/   48:  preempt_01_self.c++17.release                   100 runs          0 bad        100 good
+    9/   48:  preempt_02_fifo.c++14.debug                     100 runs          0 bad        100 good
+   10/   48:  preempt_02_fifo.c++14.release                   100 runs          1 bad         99 good
+   11/   48:  preempt_02_fifo.c++17.debug                     100 runs          1 bad         99 good
+   12/   48:  preempt_02_fifo.c++17.release                   100 runs          0 bad        100 good
+   13/   48:  preempt_03_decrement.c++14.debug                100 runs         24 bad         76 good
+   14/   48:  preempt_03_decrement.c++14.release              100 runs         25 bad         75 good
+   15/   48:  preempt_03_decrement.c++17.debug                100 runs         26 bad         74 good
+   16/   48:  preempt_03_decrement.c++17.release              100 runs         17 bad         83 good
+   17/   48:  preempt_04_thread.c++14.debug                   100 runs          0 bad        100 good
+   18/   48:  preempt_04_thread.c++14.release                 100 runs          0 bad        100 good
+   19/   48:  preempt_04_thread.c++17.debug                   100 runs          0 bad        100 good
+   20/   48:  preempt_04_thread.c++17.release                 100 runs          0 bad        100 good
+   21/   48:  std_01_thread.c++14.debug                       100 runs          0 bad        100 good
+   22/   48:  std_01_thread.c++14.release                     100 runs          0 bad        100 good
+   23/   48:  std_01_thread.c++17.debug                       100 runs          0 bad        100 good
+   24/   48:  std_01_thread.c++17.release                     100 runs          0 bad        100 good
+   25/   48:  std_02_nonstatic.c++14.debug                    100 runs          0 bad        100 good
+   26/   48:  std_02_nonstatic.c++14.release                  100 runs          0 bad        100 good
+   27/   48:  std_02_nonstatic.c++17.debug                    100 runs          0 bad        100 good
+   28/   48:  std_02_nonstatic.c++17.release                  100 runs          0 bad        100 good
+   29/   48:  std_03_array.c++14.debug                        100 runs          0 bad        100 good
+   30/   48:  std_03_array.c++14.release                      100 runs          0 bad        100 good
+   31/   48:  std_03_array.c++17.debug                        100 runs          0 bad        100 good
+   32/   48:  std_03_array.c++17.release                      100 runs          0 bad        100 good
+   33/   48:  std_04_lambda.c++14.debug                       100 runs          0 bad        100 good
+   34/   48:  std_04_lambda.c++14.release                     100 runs          0 bad        100 good
+   35/   48:  std_04_lambda.c++17.debug                       100 runs          0 bad        100 good
+   36/   48:  std_04_lambda.c++17.release                     100 runs          0 bad        100 good
+   37/   48:  task_01_monopoly.c++14.debug                    100 runs          0 bad        100 good
+   38/   48:  task_01_monopoly.c++14.release                  100 runs          0 bad        100 good
+   39/   48:  task_01_monopoly.c++17.debug                    100 runs          0 bad        100 good
+   40/   48:  task_01_monopoly.c++17.release                  100 runs          0 bad        100 good
+   41/   48:  task_02_deadline.c++14.debug                    100 runs          0 bad        100 good
+   42/   48:  task_02_deadline.c++14.release                  100 runs          0 bad        100 good
+   43/   48:  task_02_deadline.c++17.debug                    100 runs          0 bad        100 good
+   44/   48:  task_02_deadline.c++17.release                  100 runs          0 bad        100 good
+   45/   48:  task_03_sort.c++14.debug                        100 runs          0 bad        100 good
+   46/   48:  task_03_sort.c++14.release                      100 runs          0 bad        100 good
+   47/   48:  task_03_sort.c++17.debug                        100 runs          0 bad        100 good
+   48/   48:  task_03_sort.c++17.release                      100 runs          0 bad        100 good
+              SUMMARY                                        4800 runs         94 bad       4706 good
+### multivm Libpreempt(all) *** SUCCESS = 98.000%
+### multivm Libpreempt(all) *** see 'multivm-all-report.md' for details
 ```
 
 First the script compiles a matrix of executables for each single test where
@@ -107,15 +104,15 @@ A run is considered good if the process succeeds. So no test framework is
 required on the C++ side. If the process returns exit code 0 it passed,
 otherwise not.
 
-If the *PREEMPT_RT* patches are installed all tests should complete 100%,
-otherwise the rate of successful tests should be will over 95% under Linux and
-50% under layers like Cygwin.
+**If the *PREEMPT_RT* patches are installed all tests should complete 100%.**
+Otherwise, as demonstrated here, it is to be expected that test
+*preempt_03_decrement.cpp* will fail particularly often, since it is the
+toughest test in this suite to date.
 
 NOTE: Since the tests are all standard C++ they should compile on non-UNIX
       systems such as Windows too. However, currently the test driver generates
       a Makefile for GNU/Linux only. The plan is to have this part, which is
-      implemented a little "brute force" at the moment, done with Cmake, but the
-      author has not had the time for that yet. Pull requests welcome.
+      implemented a little "brute force" at the moment, done with Cmake.
 
 ## Installing
 

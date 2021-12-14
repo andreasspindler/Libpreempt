@@ -18,5 +18,6 @@ int main(int argc, char *argv[])
   th.join();
 
   VERIFY(local);
-  return 0;
+
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

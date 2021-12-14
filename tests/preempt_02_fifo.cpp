@@ -27,9 +27,7 @@ int main(int argc, char *argv[])
 
   int expected[] { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
-  /* Replace SCHED_FIFO by SCHED_RR and this test can go wrong with a
-     probability of approx. 0.1%. The only reason why this probability is not
-     higher is the shortness of decrement(). */
+  /* Replace SCHED_FIFO by SCHED_RR and this test can go wrong. */
   base::pthread handle[10] {
     base::pthread(SCHED_FIFO, 1, decrement, &expected[0]),
     base::pthread(SCHED_FIFO, 1, decrement, &expected[1]),
@@ -54,11 +52,9 @@ int main(int argc, char *argv[])
 
   preempt::this_process::end_realtime();
 
-  if (global_value == -1) {
-    return EXIT_SUCCESS;
-  } else {
-    return EXIT_FAILURE;
-  }
+  VERIFY(global_value == -1);
+
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 void* decrement(void *expected)

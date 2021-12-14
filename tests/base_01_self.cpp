@@ -1,7 +1,6 @@
 /* -*- coding: raw-text-unix; -*-
  *
  * Base library self tests.
- *
  */
 #include <base/all.h>
 
@@ -15,21 +14,25 @@ void* thread_function(void* arg) {
 
 int main(int argc, char *argv[])
 {
-  /*
+  /*********************************************
+   * base/chrono.h
+   */
+  assert(base::sec_to_nsec(1) == 1000000000L);
+  assert(base::sec_to_usec(1) ==    1000000L);
+  assert(base::sec_to_msec(1) ==       1000L);
+  assert(base::nsec_to_sec(1000000000L) == 1);
+  assert(base::usec_to_sec(   1000000L) == 1);
+  assert(base::msec_to_sec(      1000L) == 1);
+
+  /*********************************************
    * Basic POSIX thread. Runs threads under SCHED_OTHER default policy
    * (non-realtime, unprioritized).
    */
   char argument[] = X;
-
-  /* thread_function1 */
   auto context = base::pthread(thread_function, argument);
-  if (context) {
-    context.join();
-    if (context)
-      return EXIT_SUCCESS;
-  }
+  VERIFY(context);
+  context.join();
+  VERIFY(!context);
 
-  /* thread creation or join failed */
-  std::cerr << context.last_error << std::endl;
-  return EXIT_FAILURE;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

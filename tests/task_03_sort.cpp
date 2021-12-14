@@ -7,7 +7,9 @@
  */
 #include "common.h"
 #include <array>
+
 #include <base/algorithm.h>
+#include <base/debug.h>
 
 using namespace std;
 
@@ -44,5 +46,5 @@ main(int argc, char *argv[])
   t.join(); PRINT(t);           // see task_03_sort.stdout
   u.join(); PRINT(u);
 
-  return EXIT_SUCCESS;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

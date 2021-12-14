@@ -7,22 +7,14 @@ Name='Libpreempt'
 
 case ${Configuration}
 in
-  std)
-    Tests=($(find_tests $InDir 'std_*.cpp'))
-    ;;
-  sched)
-    Tests=($(find_tests $InDir 'sched_*.cpp'))
-    ;;
-  stress)
-    ;;
+  base)   Tests=($(find_tests $InDir 'base_*.cpp'));;
+  std)    Tests=($(find_tests $InDir 'std_*.cpp'));;
+  sched)  Tests=($(find_tests $InDir 'sched_*.cpp'));;
+  firm*)  Tests=($(find_tests $InDir 'firmware_*.cpp'));;
   parinama)                     # Sanskrit: development, change
-    Tests=($(find_tests $InDir 'task_03*.cpp'))
+    Tests=($(find_tests $InDir "preempt_*.cpp"))
     Standards=(c++17)
-    Make=(make -j1)
-    CC+=(-fmax-errors=3)
-    ;;
-  1|2)
-    Tests=($(find_tests $InDir 'firmware_0$Configuration.cpp'))
-    Standards=(c++14 c++17)
+    Make=(make -j4)
+    CC+=(-fmax-errors=2)
     ;;
 esac

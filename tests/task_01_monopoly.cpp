@@ -77,5 +77,5 @@ int main(int argc, char *argv[])
   test(1, SCHED_FIFO);
   test(2, SCHED_RR);
 
-  return EXIT_SUCCESS;
+  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

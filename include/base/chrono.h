@@ -33,7 +33,34 @@ double nsec_to_msec(nsec_t);
 double nsec_to_usec(nsec_t);
 
 /**
- * Get elapsed time.
+ * Test if a time condition was met.
+ *
+ * Example:
+ *
+ *   void f() {
+ *     base::timeout timeout {300};
+ *      .
+ *      .
+ *     if (timeout) {
+ *       // timeout reached
+ *     }
+ *
+ */
+class timeout {
+public:
+  /** Define timeout from now plus us microseconds. */
+  timeout(long us = 0);
+
+  bool reached() const;
+
+  operator bool() const;
+
+private:
+  std::chrono::system_clock::time_point const t1_;
+};
+
+/**
+ * Get elapsed time since construction.
  *
  * Example:
  *
@@ -59,7 +86,7 @@ public:
   /** Set time. */
   stopwatch();
 
-  /** Get time of construction. */
+  /** Get time of construction or last time stop() was called. */
   time_point start() const;
 
   /** Get elapsed seconds so far. */
@@ -72,7 +99,7 @@ public:
   long microseconds() const;
 
   /** Get elapsed time in nanoseconds so far. */
-  long nanoseconds() const;
+  nsec_t nanoseconds() const;
 
   /** Get elapsed time in microseconds, then reset to current time. */
   long stop();
@@ -85,30 +112,49 @@ private:
 };
 
 /**
- * Test if a time condition was met.
+ * Nanoseconds benchmark as wrapper arround @ref base::stopwatch.
  *
  * Example:
- *
- *   void f() {
- *     base::timeout timeout {300};
- *      .
- *      .
- *     if (timeout) {
- *       // timeout reached
+ *     base::benchmark bm;
+ *     {
+ *       bm.reset(); // start
+ *           .
+ *           .
+ *       bm.stop();  // accumulate
+ *           .
+ *           .
+ *       bm.stop();  // accumulate
+ *           .
+ *           .
+ *       bm.reset(); // start new (no accumulation)
+ *           .
+ *           .
+ *       bm.stop();  // accumulate
+ *           .
+ *           .
+ *       auto intermediate_sum = bm.count();
+ *           .
+ *           .
+ *       bm.stop();  // end
+ *       auto total_sum = bm.count();
  *     }
  *
  */
-class timeout {
+class benchmark
+{
 public:
-  /** Define timeout from now plus us microseconds. */
-  timeout(long us = 0);
+  /** Set new timepoint. */
+  void reset();
 
-  bool reached() const;
+  /** Accumulate nanoseconds since last call to reset() or stop(). */
+  void stop();
 
-  operator bool() const;
+  /** Get accumulated nanoseconds to far. */
+  nsec_t count() const;
 
 private:
-  std::chrono::system_clock::time_point const t1_;
+  stopwatch t0_;
+  nsec_t sum_;
 };
 
 /***********************************************************************
@@ -174,7 +220,7 @@ stopwatch::microseconds() const {
 }
 
 inline
-long
+nsec_t
 stopwatch::nanoseconds() const {
   return cast<std::chrono::nanoseconds>();
 }
@@ -192,5 +238,40 @@ timeout::reached() const {
 inline
 timeout::operator bool() const {
   return reached();
+}
+
+inline
+nsec_t
+timespec_to_nsec(timespec ts) {
+  return round_to_nearest<nsec_t>(ts.tv_sec * 1e9) + ts.tv_nsec;
+}
+
+inline
+timespec
+nsec_to_timespec(nsec_t ns) {
+  timespec ts {
+    time_t(ns / nsec_t(1e9)),
+    time_t(ns % nsec_t(1e9))
+  };
+  return ts;
+}
+
+inline
+void
+benchmark::reset() {
+  t0_ = stopwatch {};
+}
+
+inline
+void
+benchmark::stop() {
+  sum_ += t0_.nanoseconds();
+  reset();
+}
+
+inline
+nsec_t
+benchmark::count() const {
+  return sum_;
 }
 } /* base */

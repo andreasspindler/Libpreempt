@@ -99,9 +99,8 @@ void
 pthread::join() {
   if (int errnum = pthread_join(id, 0)) {
     last_error = base::sprintf("pthread::join() failed: '%s'", std::strerror(errnum));
-    joinable = false;
   } else {
-    joinable = true;
+    joinable = false;
     last_error.clear();
   }
 }
