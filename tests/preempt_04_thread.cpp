@@ -8,7 +8,7 @@
 #include <preempt/thread.h>
 #include <preempt/process.h>
 
-#include <base/debug.h>
+#include <base/verify.h>
 
 #include <string>
 

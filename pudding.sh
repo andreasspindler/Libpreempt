@@ -330,15 +330,12 @@ $Type
 
 EOF
                   for ext in stderr stdout stackdump; do
-                    if [[ -s $Target.$ext ]]; then
-                      cat >>$Report <<EOF
+                    cat >>$Report <<EOF
+
 ## $ext
 
-$(cat $Target.$ext 2>/dev/null)
 EOF
-                    else
-                      rm -f $Target.$ext
-                    fi
+                    [[ -s $Target.$ext ]] && cat $Target.$ext >>$Report
                   done
                   Bad=$((Cmd - Good))
                   if ((optshy==0 || Bad)); then

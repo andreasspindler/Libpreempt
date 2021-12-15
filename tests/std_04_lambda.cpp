@@ -5,7 +5,7 @@
 #include <thread>
 #include <string>
 
-#include <base/debug.h>
+#include <base/verify.h>
 
 int main(int argc, char *argv[])
 {

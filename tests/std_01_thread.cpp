@@ -8,7 +8,7 @@
 #include <thread>
 #include <string>
 
-#include <base/debug.h>
+#include <base/verify.h>
 
 #define X "Om Gam Ganapataye Namaha"
 
@@ -17,8 +17,7 @@ void* Task1(void* arg) {
 }
 
 void* Task2(char const* arg) {
-  /* The VERIFY macro works like assert() but also if NDEBUG is
-     defined. */
+  /* The VERIFY macro works like assert() but also if NDEBUG is defined. */
   VERIFY(std::string(arg) == X);
   return nullptr;
 }
@@ -37,8 +36,8 @@ public:
 
 int main(int argc, char *argv[])
 {
-  /* Create array of threads running functions Task1(), Task2() and
-     Task3(). The execution order is undefined! */
+  /* Create array of threads running functions Task1(), Task2() and Task3(). The
+     execution order is undefined! */
   std::thread tha[] {
     std::thread {Task1, nullptr},
     std::thread {Task1, (void*) X},
@@ -49,8 +48,8 @@ int main(int argc, char *argv[])
   /* Static class member function Task4::execute() */
   std::thread th {&Task4::execute, "example"};
 
-  /* The std::thread dtor calss std::terminate if the thread wasn't
-     joined or detached. */
+  /* The std::thread dtor calss std::terminate if the thread wasn't joined or
+     detached. */
   th.join();
   for (std::thread& th : tha) {
     th.join();

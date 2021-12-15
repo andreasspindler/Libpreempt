@@ -8,7 +8,7 @@
 #include <memory>
 #include <chrono>
 
-#include <base/debug.h>
+#include <base/verify.h>
 
 #define X "Om Sharavanabhavaya Namaha"
 
@@ -24,18 +24,18 @@ int main(int argc, char *argv[])
         VERIFY(arg == X);
       }
     };
-    {                             // Task::run via object on stack
+    {                           // Task::run via object on stack
       Task task;
       std::thread th {&Task::run, &task, X};
       th.join();
     }
-    {                             // Task::run via raw pointer
+    {                           // Task::run via raw pointer
       Task *task = new Task;
       std::thread th {&Task::run, task, X};
       th.join();
       delete task;
     }
-    {                             // Task::run via smart pointer
+    {                           // Task::run via smart pointer
       auto task = std::make_shared<Task>();
       std::thread th {&Task::run, task, X};
       th.join();

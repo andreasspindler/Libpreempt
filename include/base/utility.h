@@ -1,6 +1,6 @@
 /* -*-coding:utf-8-unix-*-
  *
- * base/utility.h -- shared_ptr_less, ptr_cast, atomic_ref etc.
+ * base/utility.h -- shared_ptr_less, ptr_cast, atomic_ref
  *
  * In general this header contains tools that are not available in a specific
  * C++ standard yet. For example, std::atomic_ref are is only available in C++20

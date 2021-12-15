@@ -11,12 +11,14 @@
  * priority than the last FIFO thread.
  */
 #include <preempt/process.h>
-#include <base/pthread.h>
-#include <base/debug.h>
+
+#include <base/threading.h>
+#include <base/verify.h>
 
 #include <cstdlib>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -71,9 +73,9 @@ run(int (&priority_table)[N])
   }
 
   /* start and join threads */
-  base::pthread context[N];
+  base::thread context[N];
   for (int i = 0; i < N; i++) {
-    context[i] = base::pthread(Policy, priority_table[i], decrement, expected[i].get());
+    context[i] = base::thread(Policy, priority_table[i], decrement, expected[i].get());
     if (context[i].joinable) {
       continue;
     } else {

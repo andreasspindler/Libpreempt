@@ -12,8 +12,7 @@ PUDDING=./pudding.sh
 #
 all:; $(PUDDING) -DR 100
 quick:; $(PUDDING) -DR 10
-build:; $(PUDDING) -DR
-rebuild: clean; $(PUDDING) -DR
+rebuild: clean; $(PUDDING) -DR clean build 10
 
 # maintainer targets
 #
@@ -23,10 +22,10 @@ parinama:; $(PUDDING) -c$@ -D 100
 
 clean: TAGS
 	$(PUDDING) clean
-	rm -f *.mak a.out
-realclean: clean
+	rm -f *.mak a.out *.gcno *-report.md TAGS
+realclean:
 	rm -rf out
-	rm -f TAGS *.gcno
+	rm -f *.mak a.out *.gcno *-report.md TAGS
 	find -name '.#-emacs*' -delete
 	git gc
 FORCE:

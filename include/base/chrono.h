@@ -68,10 +68,10 @@ private:
  *     base::stopwatch sw;
  *      .
  *      .
- *     auto usec1 = sw.elapsed();
+ *     auto usec1 = sw.count();
  *      .
  *      .
- *     auto usec2 = sw.elapsed();
+ *     auto usec2 = sw.count();
  *      .
  *      .
  *     auto usec3 = sw.stop(); // get elapsed + reset
@@ -100,6 +100,7 @@ public:
 
   /** Get elapsed time in nanoseconds so far. */
   nsec_t nanoseconds() const;
+  nsec_t count() const;
 
   /** Get elapsed time in microseconds, then reset to current time. */
   long stop();
@@ -116,29 +117,27 @@ private:
  *
  * Example:
  *     base::benchmark bm;
- *     {
+ *     { // scope to measure
  *       bm.reset(); // start
  *           .
  *           .
  *       bm.stop();  // accumulate
  *           .
  *           .
- *       bm.stop();  // accumulate
+ *       auto meanwhile1 = bm.stop();  // accumulate and return elapsed nanoseconds
  *           .
  *           .
- *       bm.reset(); // start new (no accumulation)
+ *       bm.reset();                   // reset to zero
  *           .
  *           .
- *       bm.stop();  // accumulate
+ *       bm.stop();
  *           .
  *           .
- *       auto intermediate_sum = bm.count();
+ *       auto meanwhile2 = bm.count(); // return elapsed nanoseconds
  *           .
  *           .
- *       bm.stop();  // end
- *       auto total_sum = bm.count();
+ *       auto total_time = bm.stop();
  *     }
- *
  */
 class benchmark
 {
@@ -147,7 +146,7 @@ public:
   void reset();
 
   /** Accumulate nanoseconds since last call to reset() or stop(). */
-  void stop();
+  nsec_t stop();
 
   /** Get accumulated nanoseconds to far. */
   nsec_t count() const;
@@ -260,13 +259,14 @@ inline
 void
 benchmark::reset() {
   t0_ = stopwatch {};
+  sum_ = 0;
 }
 
 inline
-void
+nsec_t
 benchmark::stop() {
   sum_ += t0_.nanoseconds();
-  reset();
+  return count();
 }
 
 inline

@@ -17,6 +17,8 @@ public:
   /**
    * Join the member thread(s).
    */
+  virtual ~basic_task() { }
+
   virtual void join() = 0;
 };
 
@@ -83,6 +85,47 @@ protected:
   std::vector<Thread>& threads();
 };
 
+/**
+ * Run a thread that measures the time it consumes and exits if a time slice was
+ * not adhered to. In this case it calls @ref base::quick_exit (wrapper around
+ * std::quick_exit).
+ *
+ * See @ref base::quick_exit for the reason why it doesn't make sense to throw
+ * an exception.
+ *
+ * @param Ms: Logical time slice in milliseconds.
+ */
+template <int Ms>
+class critical_task : public preempt::mono_task<> {
+public:
+  using clock = std::chrono::high_resolution_clock;
+
+  virtual ~critical_task() { }
+
+  /**
+   * Create a SCHED_FIFO. Time measurement works only for realtime
+   * threads that are not interrupted by such with a higher priority.
+   */
+  void start(int priority = 1);
+
+  /**
+   * Actual thread function. May not consume more than Ms milliseconds or the
+   * process terminates.
+   */
+  virtual void run() = 0;
+
+  /**
+   * Runtime in microseconds.
+   */
+  long runtime() const;
+
+private:
+  void hook();
+
+  long usec_;
+};
+
+
 /***********************************************************************
  * inlined implementation
  */
@@ -130,5 +173,35 @@ template <class Thread>
 std::vector<Thread>&
 poly_task<Thread>::threads() {
   return threads_;
+}
+
+template <int Ms>
+void
+critical_task<Ms>::start(int priority) {
+  spawn(&critical_task::hook, this).change_scheduling(SCHED_FIFO, priority);
+}
+
+template <int Ms>
+long
+critical_task<Ms>::runtime() const {
+  return usec_;
+}
+
+template <int Ms>
+void
+critical_task<Ms>::hook()
+{
+  // TODO: use base::timeout()
+  using namespace std;
+  using namespace std::chrono;
+  auto start = clock::now();
+  auto deadline = start + milliseconds {Ms};
+  { run(); }
+  auto stop = clock::now();
+  auto us = duration_cast<microseconds>(stop - start);
+  usec_ = us.count();           // just store last duration
+  if (stop > deadline) {
+    base::quick_exit(base::sprintf("critical_task error: deadline=%ums used=%lums", Ms, usec_ / 1000).c_str());
+  }
 }
 } // preempt

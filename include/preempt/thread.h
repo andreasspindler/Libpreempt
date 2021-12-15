@@ -6,11 +6,8 @@
 
 #include <base/posix.h>
 #include <base/string.h>
-#include <base/debug.h>
-
-#include <thread>
-#include <memory>
-#include <string>
+#include <base/verify.h>
+#include <base/threading.h>
 
 #include <cstring>              // std::strerror
 #include <cassert>
@@ -109,8 +106,7 @@ public:
   /** Separates the thread of execution from the thread object, allowing
       execution to continue independently. Any allocated resources will be freed
       once the thread exits. After calling detach *this no longer owns any
-      thread.
-  */
+      thread. */
   void detach();
 
   /** Exchanges the underlying handles of two thread objects. */
@@ -124,15 +120,17 @@ public:
   /** Modify scheduling policy and priority of the already running thread.
       Return true if this is successful, false otherwise (failure). Probably
       fails if the thread has already terminated. Under Linux fails if the user
-      is not a member of the realtime group (try `std::strerror(errno)`).
+      is not a member of the realtime group.
 
       If this function returns false last_error() will provide a description.
   */
   bool try_scheduling(int policy, int priority) noexcept;
 
-  /** Like try_scheduling() but call std::quick_exit(EXIT_FAILURE) if
-      it fails. To test if a realtime scheduler is available use
-      eiter:
+  /** Like try_scheduling() but call @ref base::quick_exit if it fails. The main
+      reason for an error is insufficient user authorizations for creating
+      realtime threads.
+
+      To test if a realtime scheduler is available use:
 
          assert(base::have_realtime_kernel())
   */
@@ -145,29 +143,9 @@ private:
   std::string error_;
 };
 
-#if 0
-/**
- * @brief Like preempt::thread but with static priority and scheduling
- * policy
+/***********************************************************************
+ * inlined implementation
  */
-template <int Policy, int Priority>
-class static_thread : public thread {
-public:
-  static_thread(static_thread<Policy, Priority>&& other)
-    : thread {std::move(other)} { }
-
-  /** Construct new, normal thread object. Under POSIX this means a
-      thread running under the SCHED_OTHER scheduling policy and
-      priority 0. To set a new scheduling policy and priority @ref
-      try_scheduling(). */
-  template<class Function, class... Args>
-  explicit static_thread(Function&& f, Args&&... args)
-    : thread {std::forward<Function>(f), std::forward<Args>(args)...} {
-    change_scheduling(Policy, Priority); // may not return
-  }
-};
-#endif
-
 inline
 thread::thread() noexcept {}
 
@@ -237,23 +215,26 @@ thread::swap(thread& other) noexcept {
 inline
 bool
 thread::try_scheduling(int new_policy, int new_priority) noexcept {
-  if (false == joinable())
-    return true;
   switch (new_policy) {
   case SCHED_FIFO:
   case SCHED_RR:
-    assert(new_priority > 0);
-    break;
+    VERIFY(new_priority > 0);
+    return false;
   }
+  if (false == joinable())
+    return true;
+  /* get current policy and priority */
   sched_param sch;
   int policy;
   pthread_getschedparam(native_handle(), &policy, &sch);
-  /* get current policy and priority */
+  /* set mew policy and priority */
   sch.sched_priority = new_priority;
   if (int errnum = pthread_setschedparam(native_handle(), new_policy, &sch)) {
     switch (errnum) {
     case ESRCH:
-      /* The thread is not available ("No such process"). */
+      /* The thread is not available ("No such process"). This means it has
+         already exited. Note that std::thread::joinable() returns true for
+         exited threads. */
       return true;
     case EINVAL:
     case EPERM:
@@ -268,9 +249,7 @@ thread::try_scheduling(int new_policy, int new_priority) noexcept {
 inline
 void
 thread::change_scheduling(int policy, int priority) noexcept {
-  if (false == try_scheduling(policy, priority)) {
-    base::terminate(error_.c_str());
-  }
+  base::change_scheduling(impl_, policy, prioriy, &error_);
 }
 
 inline

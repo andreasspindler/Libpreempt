@@ -12,8 +12,10 @@
  * pthread_create() was called.
  */
 #include <preempt/process.h>
-#include <base/pthread.h>
-#include <base/debug.h>
+#include <base/threading.h>
+#include <base/verify.h>
+
+#include <iostream>
 
 int global_value;
 
@@ -28,17 +30,17 @@ int main(int argc, char *argv[])
   int expected[] { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
   /* Replace SCHED_FIFO by SCHED_RR and this test can go wrong. */
-  base::pthread handle[10] {
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[0]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[1]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[2]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[3]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[4]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[5]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[6]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[7]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[8]),
-    base::pthread(SCHED_FIFO, 1, decrement, &expected[9]),
+  base::thread handle[10] {
+    base::thread(SCHED_FIFO, 1, decrement, &expected[0]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[1]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[2]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[3]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[4]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[5]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[6]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[7]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[8]),
+    base::thread(SCHED_FIFO, 1, decrement, &expected[9]),
   };
 
   for (int i = 0; i < 10; ++i) {

@@ -8,7 +8,7 @@
 #include <string>
 
 #include <preempt/task.h>
-#include <base/debug.h>
+#include <base/verify.h>
 
 namespace pre = preempt;
 

@@ -10,7 +10,7 @@
 #include <exception>
 #include <iostream>
 
-#include <base/debug.h>
+#include <base/verify.h>
 
 class Task
 {
@@ -34,10 +34,10 @@ int main(int argc, char *argv[])
       std::thread {task, "example"},              // Task::operator(string)
       std::thread {task, 42},                     // Task::operator(int)
 #if 1
-      /* "C++’s most vexing parse." If you pass a temporary rather
-         than a named variable, then the syntax can be the same as
-         that of a function declaration, in which case the compiler
-         interprets it as such, rather than an object definition. */
+      /* "C++’s most vexing parse." If you pass a temporary rather than a named
+         variable, then the syntax can be the same as that of a function
+         declaration, in which case the compiler interprets it as such, rather
+         than an object definition. */
       std::thread {Task(), 42}
 #endif
     };

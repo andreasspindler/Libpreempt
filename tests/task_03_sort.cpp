@@ -9,12 +9,12 @@
 #include <array>
 
 #include <base/algorithm.h>
-#include <base/debug.h>
+#include <base/verify.h>
 
 using namespace std;
 
 template <int Ms, int Size>
-struct DefaultSort : CriticalTask<Ms> {
+struct DefaultSort : preempt::critical_task<Ms> {
   array<int, Size> data;
   void run() override {
     srand(time(nullptr));
@@ -25,7 +25,7 @@ struct DefaultSort : CriticalTask<Ms> {
 };
 
 template <int Ms, int Size>
-struct BubbleSort : CriticalTask<Ms> {
+struct BubbleSort : preempt::critical_task<Ms> {
   array<int, Size> data;
   void run() override {
     srand(time(nullptr));
