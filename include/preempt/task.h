@@ -93,9 +93,9 @@ protected:
  * See @ref base::quick_exit for the reason why it doesn't make sense to throw
  * an exception.
  *
- * @param Ms: Logical time slice in milliseconds.
+ * @param Ms: Logical time slice in microseconds.
  */
-template <int Ms>
+template <long Us>
 class critical_task : public preempt::mono_task<> {
 public:
   using clock = std::chrono::high_resolution_clock;
@@ -175,33 +175,33 @@ poly_task<Thread>::threads() {
   return threads_;
 }
 
-template <int Ms>
+template <long Us>
 void
-critical_task<Ms>::start(int priority) {
+critical_task<Us>::start(int priority) {
   spawn(&critical_task::hook, this).change_scheduling(SCHED_FIFO, priority);
 }
 
-template <int Ms>
+template <long Us>
 long
-critical_task<Ms>::runtime() const {
+critical_task<Us>::runtime() const {
   return usec_;
 }
 
-template <int Ms>
+template <long Us>
 void
-critical_task<Ms>::hook()
+critical_task<Us>::hook()
 {
   // TODO: use base::timeout()
   using namespace std;
   using namespace std::chrono;
   auto start = clock::now();
-  auto deadline = start + milliseconds {Ms};
+  auto deadline = start + microseconds {Us};
   { run(); }
   auto stop = clock::now();
   auto us = duration_cast<microseconds>(stop - start);
   usec_ = us.count();           // just store last duration
   if (stop > deadline) {
-    base::quick_exit(base::sprintf("critical_task error: deadline=%ums used=%lums", Ms, usec_ / 1000).c_str());
+    base::quick_exit(base::sprintf("critical_task error: deadline=%luus used=%lums", Us, usec_).c_str());
   }
 }
 } // preempt

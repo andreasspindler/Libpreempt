@@ -12,7 +12,7 @@ using namespace std;
  * Fails if run() runs longer than 20ms. Note that between the sleep() calls
  * possible context switches can occur.
  */
-struct SleepFor3ms : preempt::critical_task<20> {
+struct SleepFor3ms : preempt::critical_task<20000> {
   void run() override {
     this_thread::sleep_for(chrono::milliseconds      {1});
     this_thread::sleep_for(chrono::microseconds   {1000});

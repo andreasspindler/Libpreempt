@@ -13,8 +13,8 @@
 
 using namespace std;
 
-template <int Ms, int Size>
-struct DefaultSort : preempt::critical_task<Ms> {
+template <long Us, int Size>
+struct DefaultSort : preempt::critical_task<Us> {
   array<int, Size> data;
   void run() override {
     srand(time(nullptr));
@@ -24,8 +24,8 @@ struct DefaultSort : preempt::critical_task<Ms> {
   }
 };
 
-template <int Ms, int Size>
-struct BubbleSort : preempt::critical_task<Ms> {
+template <long Us, int Size>
+struct BubbleSort : preempt::critical_task<Us> {
   array<int, Size> data;
   void run() override {
     srand(time(nullptr));
@@ -37,8 +37,8 @@ struct BubbleSort : preempt::critical_task<Ms> {
 int
 main(int argc, char *argv[])
 {
-  DefaultSort<3, 1000> t;       // sort within 3ms or fail
-  BubbleSort< 5,  100> u;       // dt. but using bubble sort
+  DefaultSort<3000, 1000> t;    // sort within 3ms or fail
+  BubbleSort< 3000,  100> u;    // dt. but using bubble sort
 
   t.start();
   u.start();
