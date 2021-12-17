@@ -143,6 +143,11 @@ private:
   std::string error_;
 };
 
+#if 0
+template <int Policy, int Priority>
+class static_thread : public thread ..
+#endif // 0
+
 /***********************************************************************
  * inlined implementation
  */
@@ -214,42 +219,14 @@ thread::swap(thread& other) noexcept {
 
 inline
 bool
-thread::try_scheduling(int new_policy, int new_priority) noexcept {
-  switch (new_policy) {
-  case SCHED_FIFO:
-  case SCHED_RR:
-    VERIFY(new_priority > 0);
-    return false;
-  }
-  if (false == joinable())
-    return true;
-  /* get current policy and priority */
-  sched_param sch;
-  int policy;
-  pthread_getschedparam(native_handle(), &policy, &sch);
-  /* set mew policy and priority */
-  sch.sched_priority = new_priority;
-  if (int errnum = pthread_setschedparam(native_handle(), new_policy, &sch)) {
-    switch (errnum) {
-    case ESRCH:
-      /* The thread is not available ("No such process"). This means it has
-         already exited. Note that std::thread::joinable() returns true for
-         exited threads. */
-      return true;
-    case EINVAL:
-    case EPERM:
-    default:
-      error_ = base::sprintf("FAILED: pthread_setschedparam(): '%s'", std::strerror(errnum));
-      return false;
-    }
-  }
-  return true;
+thread::try_scheduling(int policy, int priority) noexcept {
+  return base::try_scheduling(impl_, policy, priority, &error_);
 }
 
 inline
 void
 thread::change_scheduling(int policy, int priority) noexcept {
-  base::change_scheduling(impl_, policy, prioriy, &error_);
+  base::change_scheduling(impl_, policy, priority, &error_);
 }
 
 inline

@@ -8,6 +8,7 @@
 #include <base/string.h>
 #include <base/verify.h>
 
+#include <stdexcept>
 #include <thread>
 #include <memory>
 #include <cstring>              // std::strerror
@@ -43,27 +44,21 @@ struct thread {
 
 /**
  * Try to modify scheduling policy and priority of a running std::thread. Turns
- * the std::thread in to a realtime thread.
+ * the std::thread into a realtime thread.
  *
- * Return true if this is successful, false otherwise (failure). Probably fails
- * if the thread has already terminated. Under Linux returns if the user is not
- * a member of the realtime group.
- *
- * If this function returns false last_error() will provide a description.
+ * Return true if this is successful, false otherwise (probably the thread has
+ * already terminated or the user is not a member of the realtime group).
  */
-bool try_scheduling(std::thread&, int policy, int priority std::string* = nullptr) noexcept;
+bool try_scheduling(std::thread&, int policy, int priority, std::string* error = nullptr) noexcept;
 
 /**
- * Really change the scheduling policy and priority of a running std::thread or
- * call @ref base::quick_exit().
- *
- * The main reason for an error is insufficient user authorizations for creating
- * threads.
+ * Change the scheduling policy and priority of a running std::thread or
+ * terminate. To test if use base::try_scheduling().
  *
  * To test if a realtime scheduler is available use @ref
  * base::have_realtime_kernel().
  */
-void change_scheduling(std::thread&, int policy, int priority, std::string* = nullptr) noexcept;
+void change_scheduling(std::thread&, int policy, int priority, std::string* error = nullptr) noexcept;
 
 /**
  * ETIMEDOUT
@@ -175,7 +170,7 @@ try_scheduling(std::thread& th, int new_policy, int new_priority, std::string* e
   case SCHED_FIFO:
   case SCHED_RR:
     VERIFY(new_priority > 0);
-    return false;
+    break;
   }
   if (false == th.joinable())
     return true;

@@ -9,6 +9,7 @@
 #include <atomic>
 #include <optional>
 #include <exception>            // std::terminate()
+#include <iostream>
 
 #include <cstdarg>              // va_list
 #include <cstdlib>              // getenv
@@ -60,7 +61,7 @@ bool running_under_debugger();
  *
  * @param unconditional: If false emit only if @ref running_under_debugger.
  */
-void breakpoint(bool unconditional = true);
+void breakpoint(bool unconditional = false);
 
 /**
  * 1. Flushes streams.

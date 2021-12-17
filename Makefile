@@ -18,7 +18,7 @@ rebuild: clean; $(PUDDING) -DR clean build 10
 #
 stress afk:; $(PUDDING) -c$@ -DOPER $@
 list:; $(PUDDING) -DOPER $@
-parinama:; $(PUDDING) -c$@ -D 100
+parinama:; $(PUDDING) -c$@ -D 10
 
 clean: TAGS
 	$(PUDDING) clean

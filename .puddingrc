@@ -12,7 +12,7 @@ in
   sched)  Tests=($(find_tests $InDir 'sched_*.cpp'));;
   firm*)  Tests=($(find_tests $InDir 'firmware_*.cpp'));;
   parinama)                     # Sanskrit: development, change
-    Tests=($(find_tests $InDir "preempt_*.cpp"))
+    Tests=($(find_tests $InDir "preempt_04*.cpp"))
     Standards=(c++17)
     Make=(make -j4)
     CC+=(-fmax-errors=2)

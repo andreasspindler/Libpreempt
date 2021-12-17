@@ -314,6 +314,7 @@ EOF
                   done
                   for i in $(seq 1 $Cmd); do
                     if ((Exists)); then
+                      #$Sudo ./$Target
                       ($Sudo ./$Target) 2>>$Target.stderr | tee -a $Target.stdout
                       Result=${PIPESTATUS[0]}
                       echo "$i/$Cmd: exit code $Result" >>$Target.stderr

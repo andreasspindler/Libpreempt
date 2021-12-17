@@ -38,7 +38,7 @@ int
 main(int argc, char *argv[])
 {
   DefaultSort<3, 1000> t;       // sort within 3ms or fail
-  BubbleSort< 3,  100> u;       // dt. but using bubble sort
+  BubbleSort< 5,  100> u;       // dt. but using bubble sort
 
   t.start();
   u.start();
