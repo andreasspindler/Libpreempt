@@ -269,7 +269,7 @@ EOF
               if ((RunningAsRoot)); then
                 :
               elif ((UserMaximumRTPriority==0)); then
-                error "user '$USER' can not start real-time threads"
+                error "user '$USER' cannot start real-time threads"
               elif ((UserMaximumRTPriority<32)); then
                 warn "user '$USER' can only start real-time threads up to priority $UserMaximumRTPriority"
                 optrelax=1

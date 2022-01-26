@@ -45,7 +45,7 @@ public:
   using thread_type = Thread;
 
   /**
-   * Join, then start a new member thread.
+   * Join a possible running member thread, then start a new one.
    */
   template<class Function, class... Args>
   Thread& spawn(Function&&, Args&&...);
@@ -86,14 +86,13 @@ protected:
 };
 
 /**
- * Run a thread that measures the time it consumes and exits if a time slice was
- * not adhered to. In this case it calls @ref base::quick_exit (wrapper around
- * std::quick_exit).
+ * Run a thread that measures the time it consumes. If a time record was torn
+ * then call @ref base::quick_exit (wrapper around std::quick_exit).
  *
  * See @ref base::quick_exit for the reason why it doesn't make sense to throw
  * an exception.
  *
- * @param Ms: Logical time slice in microseconds.
+ * @param Us: Logical time slice in microseconds.
  */
 template <long Us>
 class critical_task : public preempt::mono_task<> {
@@ -103,8 +102,8 @@ public:
   virtual ~critical_task() { }
 
   /**
-   * Create a SCHED_FIFO. Time measurement works only for realtime
-   * threads that are not interrupted by such with a higher priority.
+   * Create a SCHED_FIFO. Time measurement works only for realtime threads that
+   * are not interrupted by such with a higher priority.
    */
   void start(int priority = 1);
 
@@ -134,8 +133,7 @@ template <class Function, class... Args>
 Thread&
 mono_task<Thread>::spawn(Function&& f, Args&&... args) {
   join();
-  thread_ = Thread
-    {std::forward<Function>(f), std::forward<Args>(args)...};
+  thread_ = Thread {std::forward<Function>(f), std::forward<Args>(args)...};
   return thread_;
 }
 
@@ -191,7 +189,7 @@ template <long Us>
 void
 critical_task<Us>::hook()
 {
-  // TODO: use base::timeout()
+  // TODO: use base::timeout()?
   using namespace std;
   using namespace std::chrono;
   auto start = clock::now();

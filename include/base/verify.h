@@ -33,11 +33,11 @@
  */
 #define VERIFY(expr)                                                    \
   ((!!(expr)) || (base::verify_error(#expr, __FILE__, __LINE__), false))
+void set_verify_flag(bool);
 
 /**
  * @return True if all @ref VERIFY() macros evaluated true so far.
  */
-void set_verify_flag(bool);
 bool get_verify_flag();
 
 namespace base {

@@ -12,9 +12,6 @@
 
 namespace pre = preempt;
 
-template <typename Thread> using MonoTask = pre::mono_task<Thread>;
-template <typename Thread> using PolyTask = pre::poly_task<Thread>;
-
 /***********************************************************************
  * test code
  */
@@ -25,6 +22,8 @@ public:
   void fun3(int n) { VERIFY(n == 3); }
 } t;
 
+template <typename Thread> using MonoTask = pre::mono_task<Thread>;
+template <typename Thread> using PolyTask = pre::poly_task<Thread>;
 template <typename Thread>
 void test()
 {
