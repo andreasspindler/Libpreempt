@@ -1,6 +1,4 @@
 /*
- * std_01_thread.cpp
- *
  * std::thread background task executing global function and static class member
  * function.
  */
@@ -55,5 +53,5 @@ int main(int argc, char *argv[])
     th.join();
   }
 
-  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
+  return global_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

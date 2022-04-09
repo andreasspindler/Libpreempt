@@ -2,8 +2,9 @@
 
 # general
 SCRATCH
-PLAN
+.plan
 *.deprecated
+*.ico
 *.lnk
 *.tmp
 
@@ -26,8 +27,8 @@ gdb*
 
 # project-specific
 \#*/
-\#steinbruch/
-out/
+\.steinbruch/
+build/
 *.mak
 *-report.md
 *.stderr

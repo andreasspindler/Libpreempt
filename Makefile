@@ -1,32 +1,28 @@
+
 #
 # Compile: make stress
 # Compile: make quick
 # Compile: make parinama
 #
-.PHONY: all quick build refresh real clean realclean
+.PHONY: all quick rebuild stress afk list akut help clean realclean
 
-PUDDING=./pudding.sh
+BUILD=./testmatrix.sh
 
-#
-# common targets
-#
-all:; $(PUDDING) -DR 100
-quick:; $(PUDDING) -DR 10
-rebuild: clean; $(PUDDING) -DR clean build 10
+all:; $(BUILD) -DR 100
+quick:; $(BUILD) -DR 10
+build rebuild: clean; $(BUILD) -DR $@ 10
+stress afk:; $(BUILD) -c$@ -DOPER $@
+akut:; $(BUILD) -c$@ -D 10
+list:; $(BUILD) -DOPER $@
 
-# maintainer targets
-#
-stress afk:; $(PUDDING) -c$@ -DOPER $@
-list:; $(PUDDING) -DOPER $@
-par parinama:; $(PUDDING) -c$@ -D 10
-
+help:
+	$(BUILD) -h
 clean: TAGS
-	$(PUDDING) clean
-	rm -f *.mak a.out *.gcno *-report.md TAGS
-realclean:
-	rm -rf out
-	rm -f *.mak a.out *.gcno *-report.md TAGS
-	find -name '.#-emacs*' -delete
+	$(BUILD) $@
+	find -name '.#-*' -delete
+realclean: clean
+	$(BUILD) $@
+	rm -f TAGS BROWSE
 	git gc
 FORCE:
 TAGS: FORCE

@@ -2,7 +2,18 @@
  *
  * Find out execution time of realtime threads.
  */
-#include "common.h"
+#include <chrono>
+#include <iostream>
+
+#include <base/utility.h>
+#include <base/string.h>
+
+#include <preempt/task.h>
+
+#define PRINT(t) \
+  if ((1)) { \
+    std::cerr << #t << ": runtime = " << t.runtime() << " usec" << std::endl; \
+  } else
 
 using namespace std;
 
@@ -32,5 +43,5 @@ main(int argc, char *argv[])
   t1.join(); PRINT(t1);
   t2.join(); PRINT(t2);
 
-  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
+  return global_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

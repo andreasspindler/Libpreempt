@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
   preempt::this_process::end_realtime();
 
-  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
+  return global_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 void*

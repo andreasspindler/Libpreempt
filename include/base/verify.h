@@ -1,6 +1,6 @@
 /* -*-coding:raw-text-unix-*-
  *
- * base/debug.h -- debugger, breakpoints and VERIFY()
+ * base/debug.h -- debugger, breakpoints, quick_exit() and VERIFY()
  */
 #pragma once
 
@@ -33,12 +33,12 @@
  */
 #define VERIFY(expr)                                                    \
   ((!!(expr)) || (base::verify_error(#expr, __FILE__, __LINE__), false))
-void set_verify_flag(bool);
+void global_verify_flag(bool);
 
 /**
  * @return True if all @ref VERIFY() macros evaluated true so far.
  */
-bool get_verify_flag();
+bool global_verify_flag();
 
 namespace base {
 /**
@@ -66,32 +66,39 @@ void breakpoint(bool unconditional = false);
 /**
  * 1. Flushes streams.
  * 2. Calls @ref base::breakpoint() unless NDEBUG is defined.
- * 3. Calls std::quick_exit(EXIT_FAILURE)
+ * 3. Calls std::terminate()
  *
- * std::quick_exit() will not destruct global/static objects including thread
- * objects. This is bad because the thread dtor will call std::terminate() if
- * the thread is unjoined.
+ * Before quitting std::terminate() will destruct global/static objects
+ * including thread objects in the process in order to free resources.
  *
- * Solution: in multi-threaded programs use base::terminate() to leave
- * ctors/dtors unconditionally and base::quick_exit() otherwise.
+ * std::terminate() is the preferred way to exit ctors/dtors in multi-threaded
+ * programs. Note the std::thread dtor calls std::terminate() if the thread is
+ * unjoined.
+ *
+ * @see base::quick_exit()
  */
-void quick_exit(char const* descr = nullptr) NORETURN;
-void quick_exit(char const* descr, char const* file, unsigned line) NORETURN;
+void terminate(char const* descr) NORETURN;
+void terminate(char const* descr, char const* file, unsigned line) NORETURN;
 
 /**
  * 1. Flushes streams.
  * 2. Calls @ref base::breakpoint() unless NDEBUG is defined.
- * 3. Calls std::terminate()
+ * 3. Calls std::quick_exit(EXIT_FAILURE)
  *
- * std::terminate() is the preferred way to exit ctors and dtors in
- * multi-threaded programs. Rationale: the std::thread dtor calls
- * std::terminate() too. See also @ref base::quick_exit().
+ * std::quick_exit() is the preferred way to exit multi-threaded programs in
+ * case of runtime errors. When a runtime errors occurs many threads will be
+ * unjoined but calling std::terminate() would call dtors of global/static
+ * objects anyway.
  *
- * Solution: in multi-threaded programs use base::terminate() to leave
- * ctors/dtors unconditionally and base::quick_exit() otherwise.
+ * The idea is that std::quick_exit() will not free resources because that could
+ * produce subsequent errors. This means std::quick_exit() will not destruct
+ * global/static objects including thread objects. The process leaves any
+ * cleanup work to the kernel (and possibly the hardware).
+ *
+ * @see base::terminate()
  */
-void terminate(char const* descr) NORETURN;
-void terminate(char const* descr, char const* file, unsigned line) NORETURN;
+void quick_exit(char const* descr = nullptr) NORETURN;
+void quick_exit(char const* descr, char const* file, unsigned line) NORETURN;
 
 /***********************************************************************
  * inlined implementation
@@ -168,6 +175,6 @@ inline
 void
 verify_error(char const* msg, char const* file, unsigned line) {
   std::fprintf(stderr, "Verification failed! %s at %s(%u)\n", msg, file, line);
-  set_verify_flag(false);
+  global_verify_flag(false);
 }
 } /* base */

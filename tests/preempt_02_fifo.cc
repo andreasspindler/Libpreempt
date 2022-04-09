@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
   VERIFY(global_value == -1);
 
-  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
+  return global_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 void* decrement(void *expected)

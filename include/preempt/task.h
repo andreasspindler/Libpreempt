@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <mutex>
 
 #include <preempt/thread.h>
 
@@ -14,16 +15,24 @@ namespace preempt {
  */
 class basic_task {
 public:
+  virtual ~basic_task() { }
+
   /**
    * Join the member thread(s).
    */
-  virtual ~basic_task() { }
-
   virtual void join() = 0;
+
+  /**
+   * Test if at least one thread is joinable.
+   */
+  virtual bool joinable() const = 0;
 };
 
 /**
- * Contains a single thread to distribute work.
+ * Task that uses a single thread to distribute work.
+ *
+ * Technically a wrapper around std::thread or preempt::thread with a @ref
+ * basic_thread interface.
  *
  * Example:
  *
@@ -50,9 +59,7 @@ public:
   template<class Function, class... Args>
   Thread& spawn(Function&&, Args&&...);
 
-  /**
-   * Join the member thread.
-   */
+  bool joinable() const override;
   void join() override;
 
 protected:
@@ -60,13 +67,17 @@ protected:
 };
 
 /**
- * Contains a thread vector to distribute work.
+ * Task that uses a vector of threads to distribute work.
+ *
+ * Technically a wrapper around a std::thread or preempt::thread vector with
+ * a @ref basic_thread interface.
  *
  * @param Thread: std::thread or preempt::thread
  */
 template <typename Thread = preempt::thread>
 class poly_task : public virtual basic_task {
   std::vector<Thread> threads_;
+  std::mutex lock_;
 public:
   using thread_type = Thread;
 
@@ -81,13 +92,27 @@ public:
    */
   void join() override;
 
+  bool joinable() const override;
+
 protected:
   std::vector<Thread>& threads();
 };
 
 /**
- * Run a thread that measures the time it consumes. If a time record was torn
- * then call @ref base::quick_exit (wrapper around std::quick_exit).
+ * Real-time task.
+ *
+ * Basically a preempt::mono_task<preempt::thread> with a virtual run() method.
+ */
+class task : public preempt::mono_task<> {
+};
+
+/**
+ * Real-time task that measures the time it consumes.
+ *
+ * Basically a preempt::mono_task<preempt::thread> with a virtual run() method.
+ *
+ * If a time record was torn then call @ref base::quick_exit (wrapper around
+ * std::quick_exit).
  *
  * See @ref base::quick_exit for the reason why it doesn't make sense to throw
  * an exception.
@@ -102,7 +127,7 @@ public:
   virtual ~critical_task() { }
 
   /**
-   * Create a SCHED_FIFO. Time measurement works only for realtime threads that
+   * Create a SCHED_FIFO. Time measurement works only for real-time threads that
    * are not interrupted by such with a higher priority.
    */
   void start(int priority = 1);
@@ -124,7 +149,6 @@ private:
   long usec_;
 };
 
-
 /***********************************************************************
  * inlined implementation
  */
@@ -132,17 +156,23 @@ template <class Thread>
 template <class Function, class... Args>
 Thread&
 mono_task<Thread>::spawn(Function&& f, Args&&... args) {
-  join();
+  join();                       // finished current thread first
   thread_ = Thread {std::forward<Function>(f), std::forward<Args>(args)...};
   return thread_;
 }
 
 template <class Thread>
+bool
+mono_task<Thread>::joinable() const {
+  return thread_.joinable();
+}
+
+template <class Thread>
 void
 mono_task<Thread>::join() {
-  if (thread_.joinable()) {
+  /* if default constructed join throws system_error */
+  if (joinable())
     thread_.join();
-  }
 }
 
 template <class Thread>
@@ -155,6 +185,7 @@ template <class Thread>
 template <class Function, class... Args>
 Thread&
 poly_task<Thread>::spawn(Function&& f, Args&&... args) {
+  std::lock_guard<decltype(lock_)> {lock_};
   threads_.emplace_back(Thread {std::forward<Function>(f), std::forward<Args>(args)...});
   return threads_.back();
 }
@@ -165,6 +196,17 @@ poly_task<Thread>::join() {
   for (auto& t : threads_) {
     t.join();
   }
+}
+
+template <class Thread>
+bool
+poly_task<Thread>::joinable() const {
+  for (auto& t : threads_) {
+    if (t.joinable()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 template <class Thread>

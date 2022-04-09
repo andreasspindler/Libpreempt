@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # -*-coding:raw-text-unix;-*-
 #
-# pudding.sh -- unit test tool that compiles a bunch of C++ files,
-#               runs the executables and collects statistics
-#
-# Because the proof is in the pudding.
+# Unit test tool that compiles a bunch of C++ files, runs the
+# executables and collects statistics.
 #
 {
   ##############################################
@@ -14,7 +12,7 @@
   #
   Name=$(basename "$PWD")
   InDir='tests'
-  OutDir="out"
+  BuildDir='build'
   Configuration='all'
   CC=(g++ -pthread -D_GNU_SOURCE)
   Standards=(c++14 c++17)
@@ -43,30 +41,24 @@ Options:
 
 Valid values for <CMD>:
 
-  list      Lists all tests
-
-  <NUMBER>  Define the # of processes to spawn for each test. In shy
-            mode (-s) the script will stop if a run failed.
-
+  build     build tests
+  list      lists tests
+  stress    build whole test matrix and try a few runs.
   afk       dto. but do very many runs (yet not infinitely many)
+  <NUMBER>  build and run this number of times
 
-  stress    Compile all files on all optimization levels and try a few
-            runs.
+Global variables that can be overrided in '.testrc':
 
-Global variables that can be overrided in '.puddingrc':
-
-  NAME                DEFAULT
+  BuildDir            $BuildDir
+  CC                  ${CC[@]}
   Configuration       $Configuration
   InDir               $InDir
-  OutDir              $OutDir
-  Tests               (<all .cpp-files under InDir>)
-  Standards           (${Standards[@]})
-  Optimizations       (${Optimizations[@]})
-  CC                  ${CC[@]}
   Make                (${Make[@]})
+  Optimizations       (${Optimizations[@]})
+  Standards           (${Standards[@]})
+  Tests               (<all C++ files under InDir>)
 
-Valid values for <OPT> and valid entries for the 'Optimizations'
-array:
+Valid values for <OPT> and valid entries for the 'Optimizations' array:
 
   NAME                EXTRA COMPILER FLAGS
   0|1|2|3|fast        -O<OPT>
@@ -79,9 +71,9 @@ EOF
       exit ${1:-1}
     }
 
-    optshy=0 optquiet=0 optrelax=0 optparallelize=0
+    optshy=0 optverbose=0 optrelax=0 optparallelize=0
 
-    while getopts "DOPERc:o:j:qsSh" o; do
+    while getopts "DOPERc:o:j:vsSh" o; do
       case "$o" in
         D) Optimizations+=('debug');;
         O) Optimizations+=('O0' 'O1' 'O2' 'O3' 'Os' 'Ofast');;
@@ -91,7 +83,7 @@ EOF
         c) Configuration=$OPTARG;;
         o) Optimizations+=($OPTARG);;
         j) Make+=(-j$OPTARG);;
-        q) ((optquiet++));;
+        v) ((optverbose++));;
         s) ((optshy++));;
         S) Sudo='sudo';;
         h) usage 0;;
@@ -102,9 +94,9 @@ EOF
     Cmds=()
     (($#)) && Cmds+=("$@") || Cmds+=()
     March=$(hostname)-$Configuration
-    OutDir="$OutDir/$March"
+    MarchDir="$BuildDir/$March"
 
-    find_tests() { find ${1:-$InDir} -maxdepth 1 -not -name '[._]*' -and -name "${2:-*.cpp}"; }
+    find_tests() { find ${1:-$InDir} -maxdepth 1 -not -name '[._]*' -and \( -name "${2:-*.cpp}" -o -name "${2:-*.cc}" \); }
     readcommit() { git -C ${1:-.} rev-parse --short ${2:-HEAD} || echo ''; }
     {
       missing=()
@@ -121,40 +113,40 @@ EOF
   ANSI_YLW="\033[1;93m" ANSI_DYL="\033[1;33m"
   ANSI_RED="\033[1;91m" ANSI_DRD="\033[1;31m"
   ANSI_OFF="\033[0m"
-  cout() { echo -e "### $(hostname) $Name(${Configuration}) ***" "$@"; } 1>&2
-  cerr() { cout "$@"; }
-  info() { ((optquiet<1)) && cout "$@"; }
-  chat() { ((optquiet<2)) && cout "$@"; }
+  cout() { echo -e "### $(hostname) $Name(${Configuration}) ***" "$@"; } #1>&2
+  cerr() { cout "$@"; } >&2
+  green() { local label=$1; shift; cout "${ANSI_DGR}$label:${ANSI_GRN} $@$ANSI_OFF"; }
+  red() { local label=$1; shift; cout "${ANSI_DRD}$label:${ANSI_RED} $@$ANSI_OFF"; }
+  info() { ((optverbose)) && cout "$@"; }
   warn() { cerr "${ANSI_DYL}WARNING:${ANSI_YLW}" "$@" "$ANSI_OFF"; }
   error() { cerr "${ANSI_DRD}ERROR:${ANSI_RED}" "$@" "$ANSI_OFF"; }
   die() { error "$@"; exit 1; }
 
   ##############################################
-  # populate array Tests
+  # populate array Tests and Targets
   #
-  # source .puddingrc and complete global variables
+  # source .testrc and complete global variables
+  #
+  # loop over all Optimizations and create targets and rules
   #
   Tests=($(find_tests $InDir))
-  [[ ! -f .puddingrc ]] || source .puddingrc || die 'bad .puddingrc'
+  [[ ! -f .testrc ]] || source .testrc || die 'bad .testrc'
   TestsSize=${#Tests[@]}
 
   ((${#Optimizations[@]})) || Optimizations=('default')
   info "$(uname -srm) ($(${CC[0]} --version | head -1))"
   info "${Standards[@]} ${Optimizations[@]}"
-
-  ##############################################
-  # populate array Targets
-  #
-  # loop over all Optimizations and create makefile targets and rules
-  #
   {
-    declare -A Targets Rules Clusters
+    declare -A Targets Rules1 Rules2 Clusters
     declare -a Flags
-    Targets=() Rules=()
+    Targets=() Rules1=() Rules2=()
 
     get_target_basename() {
-      local cpptest=$1 std=$2 opt=$3
-      echo -n "$(basename $cpptest .cpp).$std.$opt"
+      local cpptest=$1 std=$2 opt=$3 ext
+      [[ ${cpptest##*.} == "cpp" ]] && ext=.cpp
+      [[ ${cpptest##*.} == "cxx" ]] && ext=.cxx
+      [[ ${cpptest##*.} == "cc"  ]] && ext=.cc
+      echo -n "$(basename $cpptest $ext).$std.$opt"
     }
 
     for Optimization in ${Optimizations[@]}; do
@@ -171,7 +163,10 @@ EOF
         for Standard in ${Standards[@]}; do
           Target=$(get_target_basename $Test $Standard $Optimization)
           Targets["$Target"]=$Test
-          Rules["$Target"]="${CC[@]} -std=$Standard ${Flags[@]} -Iinclude -o \$@ \$^"
+          Rules1["$Target"]="${CC[@]} -std=$Standard ${Flags[@]} -I$(realpath include) -o \$@ \$^"
+          # Set CAP_SYS_NICE capability on the executable
+          # https://manpages.debian.org/stretch/manpages/capabilities.7.en.html
+          #Rules2["$Target"]="setcap cap_sys_nice=ep \$@"
         done
       done
     done
@@ -179,54 +174,58 @@ EOF
   }
 
   ##############################################
-  # create Makefile
+  # create $Makefile in $MarchDir
   #
-  {
-    Pwd=$(pwd)
-    Makefile="${March}.mak"
-    chat "$Makefile => $OutDir/"
-    mkdir -p $OutDir
-    x=()
+  Makefile="$BuildDir/${March}.mak"
+
+  function makemakefile {
+    [[ -e $Makefile ]] || green CREATING "$Makefile"
+    mkdir -p $BuildDir || exit -1
+    x=() Pwd=$(pwd)
     for Target in "${!Targets[@]}"; do
-      x+=("$OutDir/$Target")
+      x+=("$March/$Target")
     done
     cat >$Makefile <<EOF
 # -*- mode:makefile; eval:(auto-revert-mode); -*-
-#
-# $(basename "$(pwd)")/Makefile
-#    $(date -u)
-#
-.PHONY: all build clean
+# Paths are relative to directory
+#    $(realpath "$BuildDir")
+
+all: build
 
 build: ${x[@]}
-EOF
 
+clean:; rm -fr ${March}/
+
+EOF
+    x=()
+    for f in $(ls src/*.cc); do
+      x+=($(realpath "$f"))
+    done
     for Target in "${!Targets[@]}"; do
       Test=${Targets[$Target]}
       cat >>$Makefile <<EOF
-
-$OutDir/$Target: $Test \$(wildcard src/*.cpp)
-$(printf "\t")${Rules[$Target]}
+$March/$Target: $(realpath $Test) ${x[@]}
+$(printf "\t")@mkdir -p ${March}/
+$(printf "\t")${Rules1[$Target]}
+$(printf "\t")${Rules2[$Target]}
 EOF
     done
     for Test in "${!Targets[@]}"; do
-      Target="$OutDir/${Targets[$Test]}"
+      Target="$MarchDir/${Targets[$Test]}"
     done
-    cat >>$Makefile <<EOF
-
-clean:
-$(printf "\t")find $OutDir -type f -executable -delete
-EOF
-  }
-  info "$TestsSize tests => $TargetsSize executables"
-
-  runmake() {
-    local args=("$@")
-    chat "${Make[@]} -f $Makefile ${args[@]}"
-    ${Make[@]} -f $Makefile ${args[@]} || exit -1
+    ln -fs ${March}.mak $BuildDir/Makefile
   }
 
-  ######################################################################
+  function makebuild {
+    makemakefile
+    green "BUILD" "$TestsSize tests => $TargetsSize executables"
+    local mak=$(basename $Makefile)
+    set -x
+    ${Make[@]} "$@" --no-print-directory -C$BuildDir -f$mak build || exit -1
+    { set +x; } 2>/dev/null
+  }
+
+  ##############################################
   # execute commands
   #
   RunningUnderVM=0
@@ -244,27 +243,27 @@ EOF
     for Cmd in ${Cmds[@]}; do
       CmdSuccess=1
       BgPids=()
-      #chat "$Cmd: $(date -R)"
+      #info "$Cmd: $(date -R)"
       case $Cmd in
         ########################################
         # list all tests
         #
         'list')
           for target in $(for x in ${!Targets[@]}; do echo $x; done | sort); do
-            echo $OutDir/$target
+            echo $MarchDir/$target
           done
           ;;
 
         ########################################
-        # run tests N times
+        # run all tests N times
         #
         [0-9]*)
-          if runmake build; then
+          if makebuild; then
             info 'build successful'
-            if pushd $OutDir >/dev/null; then
+            if pushd $MarchDir >/dev/null; then
               Summary=1
-              info "$TestsSize tests => $TargetsSize targets => $((Cmd * TargetsSize)) runs"
-              ((RunningUnderVM)) && { optrelax=1; warn "running under VM"; }
+              green "RUN" "$TestsSize tests => $TargetsSize targets => $((Cmd * TargetsSize)) runs"
+              ((RunningUnderVM)) && { info "running under VM"; }
               ((RunningUnderPREEMPT)) || { optrelax=1; warn "no PREEMPT_RT patches installed in kernel"; }
               if ((RunningAsRoot)); then
                 :
@@ -286,11 +285,9 @@ EOF
                 die "unimplemented"
               else
                 #
-                # Ungrouped
-                #
-                # Current directory is $OutDir. Run each executable in
-                # a separate line. If bad runs occured and shy mode is
-                # enabled stop the script.
+                # Ungrouped. Current directory is $MarchDir. Run each
+                # executable in a separate line. If bad runs occured
+                # and shy mode is enabled stop the script.
                 #
                 lno=1
                 Report="$Pwd/${March}-report.md"
@@ -301,7 +298,7 @@ EOF
                 do
                   Good=0 Bad=0 Exists=0 Type=$(file $Target) Error=''
                   if [[ -x $Target ]]; then
-                    if [[ $Type =~ 'executable' ]]; then
+                    if [[ $Type =~ 'executable' || $Type =~ ' ELF ' ]]; then
                       Exists=1
                     else
                       Error="${ANSI_RED}EXECUTABLE HAS INVALID FORMAT${ANSI_OFF}"
@@ -314,10 +311,9 @@ EOF
                   done
                   for i in $(seq 1 $Cmd); do
                     if ((Exists)); then
-                      #$Sudo ./$Target
                       ($Sudo ./$Target) 2>>$Target.stderr | tee -a $Target.stdout
                       Result=${PIPESTATUS[0]}
-                      echo "$i/$Cmd: exit code $Result" >>$Target.stderr
+                      echo "$0: $i/$Cmd: exit code $Result" >>$Target.stderr
                       ((Result==0 && Good++))
                     else        # missing
                       :
@@ -367,9 +363,13 @@ EOF
           ;;
 
         ########################################
+        # build
         # Rebuild and do [lots of] runs until CTRL-C is pressed or all
         # work is done.
         #
+        'make')       makemakefile || CmdSuccess=0;;
+        'build')      makebuild || CmdSucccess=0;;
+        'rebuild')    makebuild -B || CmdSucccess=0;;
         'afk'|'stress')
           jiva="$0 -DOER -sqq -c${Configuration:-all}"
           fnno=(0 1 1 2 3 5 8 12)
@@ -384,25 +384,12 @@ EOF
           ;;
 
         ########################################
-        # Unmatched commands are forwarded as Makefile targets.
+        # clean
         #
-        'maintainer-clean')
-          info "removing '$OutDir'"
-          rm -rf tags TAGS BROWSE $OutDir
-          exit                  # can't continue
-          ;;
-        'realclean')
-          info "removing '$OutDir'"
-          rm -rf $OutDir && mkdir -pv $OutDir || exit
-          ;;
-        'build'|'clean')
-          make $Cmd || CmdSucccess=0
-          ;;
-        *)
-          die "unknown command '$Cmd'"
-          ;;
+        'clean') rm -rf $MarchDir || CmdSucccess=0;;
+        'realclean')  rm -rf $BuildDir || CmdSucccess=0;;
+        *) die "unknown command '$Cmd'";;
       esac
-
 
       # wait for background processes
       for pid in ${BgPids[@]}; do
@@ -426,28 +413,29 @@ EOF
     #
     # Summary of all <NUMBER> commands
     #
-    if ((Summary))
-    then
+    if ((Summary)); then
+      cout "report written to '$Report'"
+      if ((optrelax)); then
+        : warn "expecting >=95% of tests to be ok (relax mode)"
+      fi
       TotalBad=$((TotalRuns - TotalGood))
-      if ((TotalRuns))
-      then
+      if ((TotalRuns)); then
         TotalGoodPercent=$(bc <<<"scale=3; $TotalGood / $TotalRuns * 100")
       else
         TotalGoodPercent='100.000'
       fi
-      if ((TotalBad)); then
-        printf "              %-40s % 10u runs ${ANSI_RED}% 10u bad${ANSI_OFF} % 10u good\n" \
-               "SUMMARY" $TotalRuns $TotalBad $TotalGood
+      green TOTAL $(printf "%u runs %u bad %u good\n" $TotalRuns $TotalBad $TotalGood)
+      if ((optrelax)); then
+        case $TotalGoodPercent in
+          100*|9[5-9]*) green SUCCESS "$TotalGoodPercent% (expected >95%)";;
+          *)            red ERROR "$TotalGoodPercent% (expected >95%)"; exit 1;;
+        esac
       else
-        printf "              %-40s % 10u runs % 10u bad % 10u good\n" \
-               "SUMMARY" $TotalRuns $TotalBad $TotalGood
+        case $TotalGoodPercent in
+          100*) green SUCCESS "$TotalGoodPercent% good";;
+          *)    red ERROR "$TotalGoodPercent% (expected 100%)"; exit 1;;
+        esac
       fi
-      info "SUCCESS = $TotalGoodPercent%"
-      info "see '$(basename $Report)' for details"
-      case $TotalGoodPercent in
-        100*) ;;
-        *) ((optrelax)) && exit 0 || exit 1;;
-      esac
     fi
   }
 }

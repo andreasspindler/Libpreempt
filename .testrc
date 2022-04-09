@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# -*-coding:raw-text-unix;-*-
+
+Name='Libpreempt'
+
+case ${Configuration}
+in
+  base)   Tests=($(find_tests $InDir 'base_*.cc'));;
+  std)    Tests=($(find_tests $InDir 'std_*.cc'));;
+  sched)  Tests=($(find_tests $InDir 'sched_*.cc'));;
+  firm*)  Tests=($(find_tests $InDir 'firmware_*.cc'));;
+  akut)                         # current development
+    Tests=($(find_tests $InDir "task_*.cc"))
+    Standards=(c++17)
+    Make=(make -j4)
+    CC+=(-fmax-errors=2)
+    ;;
+esac

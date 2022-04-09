@@ -1,0 +1,32 @@
+# -*-mode: hosts-generic; coding:raw-text-unix;-*-
+#
+# git config autocrlf true
+#
+# By default handle line endings automatically for files detected as
+# text and leave all files detected as binary untouched.
+#
+* text=auto
+
+#
+# Never modify line endings.
+#
+Makefile        -crlf
+*.sh            -crlf
+
+#
+# These files are text and should be normalized (convert CRLF => LF).
+#
+.git*           text
+UNLICENSE       text
+*.md            text
+*.cpp           text
+*.cc            text
+*.h             text
+
+#
+# These files are binary and should be left untouched (binary is macro
+# for -text -diff).
+#
+*.ico          binary
+
+# EOF

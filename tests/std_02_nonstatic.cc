@@ -1,6 +1,4 @@
 /*
- * std_02_nonstatic.cpp
- *
  * std::thread background task executing nonstatic member function
  */
 #include <thread>
@@ -77,5 +75,5 @@ int main(int argc, char *argv[])
     Task().start();
   }
 
-  return get_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
+  return global_verify_flag() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

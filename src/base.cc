@@ -82,11 +82,11 @@ have_realtime_kernel() {
 } // base
 
 bool
-get_verify_flag() {
+global_verify_flag() {
   return base::g_verify_flag;
 }
 
 void
-set_verify_flag(bool v) {
+global_verify_flag(bool v) {
   base::g_verify_flag = v;
 }

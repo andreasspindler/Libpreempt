@@ -1,6 +1,7 @@
 /* -*-coding:raw-text-unix-*-
  *
- * preempt/thread.h -- thread with priority and same interface as std::thread
+ * preempt/thread.h -- like std::thread but with optional realtime priority and
+ *                     POSIX scheduling policies
  */
 #pragma once
 
@@ -14,7 +15,8 @@
 
 namespace preempt {
 /**
- * @brief Like std::thread but allow POSIX scheduling policies
+ * @brief Like std::thread but with optional realtime priority and POSIX
+ * scheduling policies
  *
  * Example:
  *
@@ -173,7 +175,13 @@ thread::thread(int policy, int priority, Function&& f, Args&&... args)
 }
 
 inline
-thread::~thread() {}
+thread::~thread() {
+#if NDEBUG
+#else
+  auto const thread_still_active = joinable();
+  VERIFY(thread_still_active == false);
+#endif
+}
 
 inline
 thread& thread::operator = (thread&& other) noexcept {
