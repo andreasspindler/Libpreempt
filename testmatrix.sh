@@ -34,9 +34,9 @@ Options:
   -E            shortcut for '-o enlightened'
   -R            shortcut for '-o release'
   -j<JOBS>      number of make jobs
-  -q            increase silent mode
   -s            shy mode (stop if a run fails instead of counting)
   -S            run test targets under 'sudo'
+  -v            verbose mode
   -h            help
 
 Valid values for <CMD>:
@@ -371,7 +371,7 @@ EOF
         'build')      makebuild || CmdSucccess=0;;
         'rebuild')    makebuild -B || CmdSucccess=0;;
         'afk'|'stress')
-          jiva="$0 -DOER -sqq -c${Configuration:-all}"
+          jiva="$0 -DOER -s -c${Configuration:-all}"
           fnno=(0 1 1 2 3 5 8 12)
           case $Cmd in
             'afk')

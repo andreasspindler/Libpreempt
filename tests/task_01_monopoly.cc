@@ -1,7 +1,9 @@
 /*
- * MonoTask: class with one member thread (std::thread attribute)
+ * MonoTask: class with one member thread (using std::thread or preempt::thread
+ * attribute)
  *
- * PolyTask: class with many member threads (std::vector<std::thread> attribute)
+ * PolyTask: class with many member threads (using std::vector<std::thread> or
+ * std::vector<preempt::thread> attribute)
  */
 #include <vector>
 #include <thread>
@@ -27,6 +29,11 @@ public:
 template <typename Thread> using MonoTask = pre::mono_task<Thread>;
 template <typename Thread> using PolyTask = pre::poly_task<Thread>;
 
+/*
+ * Thread = std::thread or preempt::thread.
+ *
+ * Either will run as ordinary thread (SCHED_OTHER, priority 0).
+ */
 template <typename Thread>
 void test()
 {
@@ -36,39 +43,40 @@ void test()
   int const x = 2;
 
   mono.spawn(&Run::fun1, &object, 1);
-#if 0
-  mono.spawn(&Run::fun2, &t, std::ref(x));
-  mono.spawn(&Run::fun3, &t, 3);
+  mono.spawn(&Run::fun2, &object, std::ref(x));
+  mono.spawn(&Run::fun3, &object, 3);
   for (int i = 0; i < 3; ++i) {
-    poly.spawn(&Run::fun1, &t, 1);
-    poly.spawn(&Run::fun2, &t, std::ref(x));
-    poly.spawn(&Run::fun3, &t, 3);
+    poly.spawn(&Run::fun1, &object, 1);
+    poly.spawn(&Run::fun2, &object, std::ref(x));
+    poly.spawn(&Run::fun3, &object, 3);
   }
   poly.join();
-#endif
-
   mono.join();
 }
 
+/*
+ * preempt::thread with explicit scheduling and priority.
+ *
+ * preempt::thread is created with SCHED_OTHER and priority 0. To chance the
+ * policy and priority call change_scheduling() on the spawned thread object.
+ */
 void test(int priority, int policy)
 {
-  int const x = 3;
+  int const local = 3;
 
   MonoTask<pre::thread> mono;
   PolyTask<pre::thread> poly;
 
-#if 0
-  mono.spawn(&Run::fun1, &t, 1).change_scheduling(policy, priority);
-  mono.spawn(&Run::fun2, &t, 2).change_scheduling(policy, priority);
-  mono.spawn(&Run::fun3, &t, std::ref(x)).change_scheduling(policy, priority);
+  mono.spawn(&Run::fun1, &object, 1).change_scheduling(policy, priority);
+  mono.spawn(&Run::fun2, &object, 2).change_scheduling(policy, priority);
+  mono.spawn(&Run::fun3, &object, std::ref(local)).change_scheduling(policy, priority);
   for (int i = 0; i < 3; ++i) {
-    poly.spawn(&Run::fun1, &t, 1).change_scheduling(policy, priority);
-    poly.spawn(&Run::fun2, &t, 2).change_scheduling(policy, priority);
-    poly.spawn(&Run::fun3, &t, std::ref(x)).change_scheduling(policy, priority);
+    poly.spawn(&Run::fun1, &object, 1).change_scheduling(policy, priority);
+    poly.spawn(&Run::fun2, &object, 2).change_scheduling(policy, priority);
+    poly.spawn(&Run::fun3, &object, std::ref(local)).change_scheduling(policy, priority);
   }
-  mono.join();
   poly.join();
-#endif
+  mono.join();
 }
 
 /***********************************************************************
