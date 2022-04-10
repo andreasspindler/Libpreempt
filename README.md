@@ -7,7 +7,7 @@ Libpreempt
 ==========
 C++ real-time test suite and programming framework
 
-The target audience for Libpreempt are:
+The target audience for Libpreempt:
 
 - C++ developers who want to use realtime threads with the STL
 - Linux developers familar with POSIX threads and
@@ -22,8 +22,6 @@ The C++ framework was not developed on a theoretical basis but on the basis of
 concrete, practical "real-time" and "embedded" questions and scenarios. These
 can be found in the form of individual files in the *tests/* sub-directory.
 
-Each test is a single C++ file and was written to be educational.
-
 The "preempt" in Libpreempt is a reminder that real-time threads are only
 preempted by threads with higher priorities (FIFO) or the same priority (RR), or
 they deliberately call `sched_yield()`.
@@ -34,12 +32,12 @@ Install/Run
 -----------
 
 Clone the repository, compile, run and modify the real-time tests. It is also
-possible to add a new profile to *.buildrc* and cross-compile for other CPU
+possible to add a new profile to *.testrc* and cross-compile for other CPU
 micro-architectures.
 
 Example:
 
-``` sh
+```sh
  > git clone https://github.com/andreasspindler/Libpreempt
  > cd Libpreempt
  > sudo make
@@ -107,20 +105,21 @@ Example:
 First the script compiles a matrix of executables for each single test where
 each test is stretched over different C++ standards, optimization levels and
 (optionally) CPU micro-architecures. In this way it compiles many executable
-files for each single C++ file. Second, the script runs all tests repeatedly and
-summarizes results based on exit codes.
+files for each single C++ file under *tests/*. Second, the script runs all tests
+repeatedly (here 100 times) and summarizes results based on exit codes.
 
 A run is considered good if the process succeeds. So no test framework is
 required on the C++ side. If the process returns exit code 0 it passed,
 otherwise not. In the above example 68 of 5200 runs (or 1.4%) of the tests
 failed. The reason for this is that the real-time patches were not active in
 this kernel. **Each test is written exactly so that the success rate is always
-100% over a kernel with RT scheduling.** Otherwise, there is a bug in the
-kernel, runtime libraries, or build system. Basically, the idea of these tests
-is to detect such errors when you change the toolchain, upgrade the system or
-build a Yocto image, for example.
+100% under a kernel with RT scheduling.** If not 100% the patches are not
+installed, there is a bug in the kernel, runtime libraries, or build system.
+Basically, the idea of these tests is to detect such bugs or misconceptions when
+you change the toolchain, upgrade the system or build a Yocto image, for
+example.
 
-The use of `sudo` is only necessary if the user has no **scheduling
+Note that the use of `sudo` is only necessary if the user has no **scheduling
 privileges**, in which case executing programs that use one of the real-time
 scheduling policies will fail (permission denied).
 

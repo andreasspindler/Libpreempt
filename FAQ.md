@@ -65,7 +65,7 @@ Only four reasons are known to the author.
 
 Use `ulimit -r` to see the maximum real-time priority the current user can use.
 If this value is 0 then the current user is not allowed to use real-time
-scheduling policies. In this case, the affected test fails 100%. See also
+scheduling policies. In this case, some test will fail 100%. See also
 */etc/security/limits.conf*.
 
 (2) Linux **PREEMPT_RT** patches are not installed
@@ -87,18 +87,22 @@ The only other thing known to mess with the real-time scheduling policies is the
 memory manager. To prevent page-faults all pages must be locked before creating
 a real-time thread.
   
-To prevent page faults the general form a `main` function that uses Libpreempt
-is:
+To prevent page faults and disable RT throttling the general form a `main`
+function that uses Libpreempt is:
 
-``` c++
+```c++
 #include <preempt/process.h>
 
 int main(int argc, char *argv[])
 {
   preempt::this_process::begin_real_time();
-  /*
-   * all memory locked - the VMM won't interrupt the process
-   */
+  {
+    /*
+     * all memory locked - the VMM won't interrupt the process
+     *
+     * all real-time threads started in this scope will work
+     */
+  }
   preempt::this_process::end_real_time();
   return 0
 }
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
                          |
 ```
 
-## Does Yocto-Linux has an RT kernel?
+## Does the Yocto-Linux kernel support RT scheduling?
 
 Yes.
 
@@ -139,16 +143,16 @@ cause of this message can be an unjoined thread.
 
 ### How does preemptive multitasking work for real-time systems?
 
-**Preemptive multitasking** creates the illusion that multiple processes and
-threads run concurrently on a single processor, while they are actually only
+Preemptive multitasking creates the illusion that multiple processes and threads
+run concurrently on a single processor, while in reality they are actually only
 assigned a time slice. If the time slice is exceeded, the process or thread is
 "preempted", i.e. interrupted and has to wait for its next time slice.
 
 Real-time threads are an exception here. They are only interrupted if a thread
 with a higher priority (**FIFO**) or the same priority (**RR**) is to run, or if
-`sched_yield()` is called explicitly. A real-time thread can take over and
-paralyze the entire system if it does not return quickly enough or - in the case
-of longer jobs - voluntarily calls `sched_yield()`.
+`sched_yield()` is called explicitly. Therefore a real-time thread can take over
+and paralyze the entire system if it does not return quickly enough or - in the
+case of longer tasks - voluntarily calls `sched_yield()`.
 
 For this reason, RT throttling is activated under Linux: by default 5% of the
 CPU time is also assigned to non-RT threads per second.
@@ -172,21 +176,21 @@ is implemented preemptively or cooperatively.
 ### How does SCHED_FIFO and SCHED_RR work on multi-core systems?
 
 Processes and threads scheduling with `SCHED_FIFO` or `SCHED_RR` policy belong
-to the real-time (RT) category.
+to the real-time category. On **multicore systems** the kernel will not run
+multiple real-time threads on multiple cores simultaneously, which would violate
+the defined behavior.
 
-On **multicore systems** the kernel will not run multiple threads on multiple
-cores simultaneously, which would violate the defined behavior. A thread
-scheduled `SCHED_FIFO` or `SCHED_RR`, when selected for running, will continue
-to use the CPU until either it is blocked by an I/O request, it is preempted by
-a higher priority `SCHED_FIFO` or `SCHED_RR`, or it calls `sched_yield()`.
+A thread scheduled `SCHED_FIFO` or `SCHED_RR`, when selected for running, will
+continue to use the same CPU core (blocking all other real-time threads) until
+either it is blocked by an I/O request it creates, it is preempted by a higher
+priority `SCHED_FIFO` or `SCHED_RR`, or it calls `sched_yield()`.
 
 ### How do time-slices affect SCHED_FIFO and SCHED_RR?
 
-They don't. `SCHED_FIFO` and `SCHED_RR` are scheduling algorithms without time
-slicing.
+They don't. `SCHED_FIFO` and `SCHED_RR` are scheduling algorithms that
+implemented a form of cooperative multitasking without time slicing.
 
-
-### What if two or more ctors with SCHED_FIFO or SCHED_RR?
+### What if two or more ctors with SCHED_FIFO or SCHED_RR run parallely in a program?
 
 Threads created by `pthread_create()` or the `std::thread` ctor will never
 violate the specified scheduling policy. So no synchronization measures have to
@@ -209,6 +213,8 @@ In POSIX 1 to 32. Linux extends this to 1 to 99. Note that `SCHED_FIFO` can be
 used only with static priorities higher than 0, which means that when a
 `SCHED_FIFO` becomes runnable, it will always immediately preempt any currently
 running `SCHED_OTHER`, `SCHED_BATCH`, or `SCHED_IDLE` thread.
+
+Creating a `SCHED_FIFO` or `SCHED_RR` thread with priority 0 is an error.
 
 https://man7.org/linux/man-pages/man7/sched.7.html
 
