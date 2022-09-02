@@ -5,7 +5,7 @@ author: Andreas Spindler <info@andreasspindler.de>
 
 Libpreempt
 ==========
-C++ real-time test suite and programming framework
+C++ real-time test suite and framework for writing embedded firmwares.
 
 FAQ
 ---
@@ -34,7 +34,7 @@ RT scheduler implements the scheduling policy and priority associated with a
 thread. While an RTOS requires an RT scheduler it also needs predictable
 "real-time behaviors" in the other parts of the OS too.
 
-<!-- A real-time scheduler operates in O(1) time or, under Linux, as CFS
+<!-- The Linux scheduler operates in O(1) time or, under Linux, as CFS
 (*Completely Fair Scheduler*). -->
 
 ### How predictable is an RTOS?

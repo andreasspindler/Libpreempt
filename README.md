@@ -5,7 +5,7 @@ author: Andreas Spindler <info@andreasspindler.de>
 
 Libpreempt
 ==========
-C++ real-time test suite and programming framework
+C++ real-time test suite and framework for writing embedded firmwares.
 
 The target audience for Libpreempt:
 
@@ -18,15 +18,8 @@ Components:
 - the C++ framework around the notion of threads, processes, tasks and schedulers
 - the corresponding test suite which was written so
 
-The C++ framework was not developed on a theoretical basis but on the basis of
-concrete, practical "real-time" and "embedded" questions and scenarios. These
-can be found in the form of individual files in the *tests/* sub-directory.
-
-The "preempt" in Libpreempt is a reminder that real-time threads are only
-preempted by threads with higher priorities (FIFO) or the same priority (RR), or
-they deliberately call `sched_yield()`.
-
-https://github.com/andreasspindler/Libpreempt
+Each test example was developed based on a concrete scenario that typically
+occurs during firmware and application development.
 
 Install/Run
 -----------
@@ -119,16 +112,23 @@ Basically, the idea of these tests is to detect such bugs or misconceptions when
 you change the toolchain, upgrade the system or build a Yocto image, for
 example.
 
-Note that the use of `sudo` is only necessary if the user has no **scheduling
+NOTE: The use of `sudo` is only necessary if the user has no **scheduling
 privileges**, in which case executing programs that use one of the real-time
 scheduling policies will fail (permission denied).
 
-Real-time framework
--------------------
+NOTE: The Makefile approach is deprecated and will soon be replaced by CMake.
+
+Real-time model: Tasks and Schedulers
+-------------------------------------
 
 *Libpreempt* is a C++ library build around the concepts of **threads**,
 **tasks** and **schedulers**. It is based on standard C++ and POSIX and defined
 in namespace `preempt`
+
+The "preempt" in Libpreempt is a reminder that you can't set a time limit for
+real-time threads after which they will be delayed by the kernel. Instead they
+are preempted by threads with higher priorities (FIFO) or the same priority
+(RR), or they deliberately call `sched_yield()`.
 
 **Thread**
 : Independent units of execution within a process (functions, class methods).
@@ -144,10 +144,18 @@ in namespace `preempt`
 : An object that schedules tasks using a real-time clock-thread that runs with
   priority 99. Runs tasks based on ticks which are defined in microseconds.
 
+Ticks are implemented by a **Scheduler** which runs a clock thread with high
+priority. This thread periodically sleeps for the tick period, activating
+lower-priority threads. The tick period can be defined in microseconds.
+
+Therefore, the thread or threads within a task must ensure that they complete
+their work within a tick period. They don't have to end themselves, but work
+more like coroutines. The **Task** object automatically calls `sched_yield`.
+
 Real-time scheduler test suite
 ------------------------------
 
-Every test has the form of a C++ file and has been carefully written in a way
+Every example has the form of a C++ file and has been carefully written in a way
 that (1) it runs one specific scenario and (2) is human readable. Each test will
 verify several attributes of the **Linux real-time scheduler** with regard to
 the POSIX scheduling policies.
@@ -180,6 +188,8 @@ COPYRIGHT
 Written by Andreas Spindler <info@andreasspindler.de>
 
 For copyright and license information see file *UNLICENSE*.
+
+https://github.com/andreasspindler/Libpreempt
 
 <!--
 Local Variables:

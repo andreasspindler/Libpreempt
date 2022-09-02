@@ -1,4 +1,3 @@
-
 #
 # Compile: make stress
 # Compile: make quick
